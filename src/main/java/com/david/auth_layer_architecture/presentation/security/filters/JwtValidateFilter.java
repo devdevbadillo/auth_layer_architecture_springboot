@@ -3,6 +3,7 @@ package com.david.auth_layer_architecture.presentation.security.filters;
 import java.io.IOException;
 import java.util.Collection;
 
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,13 +24,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 
+@AllArgsConstructor
 public class JwtValidateFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-
-    public JwtValidateFilter(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
-    }
 
     @Override
     protected void doFilterInternal(
@@ -44,8 +42,9 @@ public class JwtValidateFilter extends OncePerRequestFilter {
             jwtToken = jwtToken.replace("Bearer ", "");
 
             try {
-
                 DecodedJWT decodedJWT = jwtUtil.validateToken(jwtToken);
+                jwtUtil.validateTypeToken(decodedJWT, "access_token");
+
                 String username = jwtUtil.extractUser(decodedJWT);
                 String commaSeparetedAuthorities = jwtUtil.getSpecificClaim(decodedJWT, "authorities").asString();
 

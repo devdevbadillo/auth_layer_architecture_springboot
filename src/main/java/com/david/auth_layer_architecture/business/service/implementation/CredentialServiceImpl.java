@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.david.auth_layer_architecture.business.service.interfaces.ICredentialService;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserAlreadyExistException;
-import com.david.auth_layer_architecture.common.utils.constants.CredentialConstants;
+import com.david.auth_layer_architecture.common.utils.constants.errors.CredentialErrors;
 import com.david.auth_layer_architecture.domain.dto.response.MessageResponse;
 import com.david.auth_layer_architecture.domain.entity.Credential;
 import com.david.auth_layer_architecture.persistence.CredentialRepostory;
@@ -22,10 +22,10 @@ public class CredentialServiceImpl implements ICredentialService{
 
         credentialRepostory.save(credential);
 
-        return new MessageResponse(CredentialConstants.USER_CREATED_SUCCESSFULLY);
+        return new MessageResponse(CredentialErrors.USER_CREATED_SUCCESSFULLY);
     }
 
     private void validateUniqueUser(String email) throws UserAlreadyExistException{
-        if (credentialRepostory.getCredentialByEmail(email) != null) throw new UserAlreadyExistException(CredentialConstants.USER_ALREADY_EXISTS);
+        if (credentialRepostory.getCredentialByEmail(email) != null) throw new UserAlreadyExistException(CredentialErrors.USER_ALREADY_EXISTS);
     }
 }

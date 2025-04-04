@@ -12,6 +12,6 @@ public class SignUpRequest {
     private String email;
 
     @NotBlank
-    @Size(min = 8, max = 20, message = "Invalid format password")
+    @Size(min = 8, max = 20)
     private String password;
 }

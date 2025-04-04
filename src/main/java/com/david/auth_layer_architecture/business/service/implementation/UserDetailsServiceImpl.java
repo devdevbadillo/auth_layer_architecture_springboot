@@ -2,6 +2,8 @@ package com.david.auth_layer_architecture.business.service.implementation;
 
 import java.util.List;
 
+import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
+import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -10,8 +12,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.david.auth_layer_architecture.common.utils.constants.ApiConstants;
-import com.david.auth_layer_architecture.common.utils.constants.CredentialConstants;
+import com.david.auth_layer_architecture.common.utils.constants.errors.CredentialErrors;
 import com.david.auth_layer_architecture.domain.entity.Credential;
 import com.david.auth_layer_architecture.persistence.CredentialRepostory;
 
@@ -25,7 +26,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Credential credential = this.findUser(username);
         List<SimpleGrantedAuthority> autorityList = List.of(
-                new SimpleGrantedAuthority("ROLE_" + ApiConstants.ROLE_USER)
+                new SimpleGrantedAuthority("ROLE_" + CommonConstants.ROLE_USER)
         );
 
         return new User(
@@ -37,7 +38,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     private Credential findUser(String email) throws UsernameNotFoundException {
         Credential credential = this.credentialRepository.getCredentialByEmail(email);
-        if (credential == null) throw new UsernameNotFoundException(CredentialConstants.USERNAME_OR_PASSWORD_INCORRECT);
+        if (credential == null) throw new UsernameNotFoundException(CredentialErrors.USERNAME_OR_PASSWORD_INCORRECT);
 
         return credential;
     }

@@ -1,33 +1,34 @@
 package com.david.auth_layer_architecture.presentation.controller;
 
+import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
+import com.david.auth_layer_architecture.common.utils.constants.routes.AuthRoutes;
+import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
+import com.david.auth_layer_architecture.domain.dto.response.SignInResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.david.auth_layer_architecture.business.facade.interfaces.IAuthFacade;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
-import com.david.auth_layer_architecture.common.utils.constants.ApiConstants;
 import com.david.auth_layer_architecture.domain.dto.request.SignInRequest;
-import com.david.auth_layer_architecture.domain.dto.response.MessageResponse;
 
 import jakarta.validation.Valid;
 
 @AllArgsConstructor
 @RestController
 @Validated
-@RequestMapping(path=  ApiConstants.PUBLIC_URL, produces = {MediaType.APPLICATION_JSON_VALUE})
+@RequestMapping(path=  CommonConstants.PUBLIC_URL, produces = {MediaType.APPLICATION_JSON_VALUE})
 @Tag(
     name = "Authentication",
     description = "Authentication endpoint"
@@ -47,7 +48,7 @@ public class AuthController {
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(
-                                    example = "{\"message\": \"*****\"}"
+                                    example = "{\"token\": \"*****\", \"refreshToken\": \"*****\"}"
                             )
                     )
             ),
@@ -83,11 +84,64 @@ public class AuthController {
             )
 
     })
-    @PostMapping(ApiConstants.SIGNIN_URL)
-    public ResponseEntity<MessageResponse> signIn(
+    @PostMapping(AuthRoutes.SIGNIN_URL)
+    public ResponseEntity<SignInResponse> signIn(
             @RequestBody @Valid SignInRequest signInRequest
     ) throws BadCredentialsException, UserNotFoundException {
         return ResponseEntity.ok(authFacade.signIn(signInRequest));
     }
 
+    @Operation(
+            summary = "Refresh access token",
+            description = "Endpoint to refresh the access token, send the refresh token in the header 'refreshToken'"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Valid token",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"token\": \"*****\", \"refreshToken\": \"*****\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"message\": \"Invalid token\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Bad request",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"message\": \"refresh token is required\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"message\": \"Internal server error\"}"
+                            )
+                    )
+            )
+
+    })
+    @PostMapping(AuthRoutes.REFRESH_TOKEN_URL)
+    public ResponseEntity<SignInResponse> refreshToken(
+            @RequestHeader @NotBlank @NotNull String refreshToken
+    )throws  UserNotFoundException{
+        return ResponseEntity.ok(authFacade.refreshToken(refreshToken));
+    }
 }

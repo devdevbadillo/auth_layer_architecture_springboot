@@ -1,5 +1,7 @@
 package com.david.auth_layer_architecture.presentation.controller;
 
+import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
+import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.david.auth_layer_architecture.business.facade.interfaces.ICredentialFacade;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserAlreadyExistException;
-import com.david.auth_layer_architecture.common.utils.constants.ApiConstants;
 import com.david.auth_layer_architecture.domain.dto.request.SignUpRequest;
 import com.david.auth_layer_architecture.domain.dto.response.MessageResponse;
 
@@ -26,7 +27,7 @@ import jakarta.validation.Valid;
 @AllArgsConstructor
 @RestController
 @Validated
-@RequestMapping(path = ApiConstants.PUBLIC_URL, produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = CommonConstants.PUBLIC_URL, produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(
         name = "Credential",
         description = "Credential API to sign up, account recovery and change password"
@@ -82,7 +83,7 @@ public class CredentialController {
             )
 
     })
-    @PostMapping(ApiConstants.SIGNUP_URL)
+    @PostMapping(CredentialRoutes.SIGNUP_URL)
     public ResponseEntity<MessageResponse> signUp(
             @RequestBody @Valid SignUpRequest signUpRequest
     ) throws UserAlreadyExistException{

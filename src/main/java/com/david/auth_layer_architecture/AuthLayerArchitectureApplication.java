@@ -9,5 +9,4 @@ public class AuthLayerArchitectureApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(AuthLayerArchitectureApplication.class, args);
 	}
-
 }

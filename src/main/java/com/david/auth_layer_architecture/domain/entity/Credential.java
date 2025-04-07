@@ -18,12 +18,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "credential")
 public class Credential {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @Column(name = "email", unique = true)
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(unique = true, nullable = false)
     private String email;
+
     private String password;
+
+    @Column(nullable = false, name = "is_access_oauth")
+    private Boolean isAccesOauth;
 }

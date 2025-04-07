@@ -26,12 +26,8 @@ public class JwtUtil {
     @Value("${jwt.user.generator}")
     private String userGenerator;
 
-    public String generateToken(String username, Integer minutes, Integer days) {
+    public String generateToken(String username,  Date expirationToken, String typeToken) {
         Algorithm algorithm = Algorithm.HMAC256(this.key);
-
-        Date expirationToken = minutes > 0 ? calculateExpirationAccessToken(minutes) : calculateExpirationRefreshToken(days);
-
-        String typeToken = minutes > 0 ? "access_token" : "refresh_token";
 
         return JWT.create()
                 .withIssuer(this.userGenerator)
@@ -44,6 +40,7 @@ public class JwtUtil {
                 .withNotBefore(new Date(System.currentTimeMillis()))
                 .sign(algorithm);
     }
+
 
     public DecodedJWT validateToken(String token) throws JWTVerificationException{
         try {
@@ -70,11 +67,15 @@ public class JwtUtil {
         return decodedJWT.getClaim(claimName);
     }
 
-    private Date calculateExpirationAccessToken(Integer minutes){
+    public Date calculateExpirationSecondsToken(Integer seconds){
+        return new Date(System.currentTimeMillis() + (seconds * 1000));
+    }
+
+    public Date calculateExpirationMinutesToken(Integer minutes){
         return new Date(System.currentTimeMillis() + (minutes * 60 * 1000));
     }
 
-    private Date calculateExpirationRefreshToken(Integer days){
+    public Date calculateExpirationDaysToken(Integer days){
         return new Date(System.currentTimeMillis() + ( days * 24 * 60 * 60 * 1000));
     }
 

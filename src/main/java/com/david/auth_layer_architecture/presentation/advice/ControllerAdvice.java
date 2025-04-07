@@ -3,6 +3,7 @@ package com.david.auth_layer_architecture.presentation.advice;
 import java.util.Map;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,5 +67,8 @@ public class ControllerAdvice {
         return new ResponseEntity<>(Map.of(KEY_MESSAGE, ex.getMessage()), HttpStatus.UNAUTHORIZED);
     }
 
-
+    @ExceptionHandler(HaveAccessWithOAuth2Exception.class)
+    private ResponseEntity<Map<String, String>> handleHaveAccessWithOAuth2Exception(HaveAccessWithOAuth2Exception ex){
+        return new ResponseEntity<>(Map.of(KEY_MESSAGE, ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
 }

@@ -29,6 +29,8 @@ public class CredentialFacadeImpl implements ICredentialFacade{
         return Credential.builder()
                 .email(signUpRequest.getEmail())
                 .password(passwordHash)
+                .name(signUpRequest.getName())
+                .isAccesOauth(false)
                 .build();
     }
 }

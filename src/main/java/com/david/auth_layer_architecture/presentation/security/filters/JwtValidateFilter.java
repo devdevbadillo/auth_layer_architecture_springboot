@@ -3,6 +3,7 @@ package com.david.auth_layer_architecture.presentation.security.filters;
 import java.io.IOException;
 import java.util.Collection;
 
+import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -37,13 +38,14 @@ public class JwtValidateFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String path = request.getRequestURI();
 
-        if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
+        if (jwtToken != null && jwtToken.startsWith("Bearer ") && path.contains(CommonConstants.SECURE_URL)) {
             jwtToken = jwtToken.replace("Bearer ", "");
 
             try {
                 DecodedJWT decodedJWT = jwtUtil.validateToken(jwtToken);
-                jwtUtil.validateTypeToken(decodedJWT, "access_token");
+                jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_ACCESS_TOKEN);
 
                 String username = jwtUtil.extractUser(decodedJWT);
                 String commaSeparetedAuthorities = jwtUtil.getSpecificClaim(decodedJWT, "authorities").asString();

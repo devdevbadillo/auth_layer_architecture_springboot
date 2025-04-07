@@ -1,8 +1,9 @@
 package com.david.auth_layer_architecture.presentation.controller;
 
+import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.routes.AuthRoutes;
-import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
+import com.david.auth_layer_architecture.domain.dto.response.MessageResponse;
 import com.david.auth_layer_architecture.domain.dto.response.SignInResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -87,7 +88,7 @@ public class AuthController {
     @PostMapping(AuthRoutes.SIGNIN_URL)
     public ResponseEntity<SignInResponse> signIn(
             @RequestBody @Valid SignInRequest signInRequest
-    ) throws BadCredentialsException, UserNotFoundException {
+    ) throws BadCredentialsException, HaveAccessWithOAuth2Exception {
         return ResponseEntity.ok(authFacade.signIn(signInRequest));
     }
 
@@ -143,5 +144,10 @@ public class AuthController {
             @RequestHeader @NotBlank @NotNull String refreshToken
     )throws  UserNotFoundException{
         return ResponseEntity.ok(authFacade.refreshToken(refreshToken));
+    }
+
+    @GetMapping(AuthRoutes.OAUTH2_ERROR_URL)
+    public ResponseEntity<MessageResponse> authenticationOAuth2Error() {
+        return ResponseEntity.ok(new MessageResponse("Authentication error"));
     }
 }

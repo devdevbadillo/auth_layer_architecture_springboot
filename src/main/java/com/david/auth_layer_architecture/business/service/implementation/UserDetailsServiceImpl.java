@@ -38,7 +38,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     private Credential findUser(String email) throws UsernameNotFoundException {
         Credential credential = this.credentialRepository.getCredentialByEmail(email);
-        if (credential == null) throw new UsernameNotFoundException(CredentialErrors.USERNAME_OR_PASSWORD_INCORRECT);
+        if (credential == null) throw new UsernameNotFoundException(CredentialErrors.USER_NOT_REGISTERED);
 
         return credential;
     }

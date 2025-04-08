@@ -4,7 +4,7 @@ import com.david.auth_layer_architecture.business.service.interfaces.ICredential
 import com.david.auth_layer_architecture.common.exceptions.credential.UserAlreadyExistException;
 import com.david.auth_layer_architecture.common.utils.JwtUtil;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
-import com.david.auth_layer_architecture.common.utils.constants.errors.AuthErrors;
+import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
 import com.david.auth_layer_architecture.domain.entity.Credential;
 import com.david.auth_layer_architecture.persistence.CredentialRepostory;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,7 +48,7 @@ public class OAuth2SuccessFilter extends SimpleUrlAuthenticationSuccessHandler {
 
         String redirectUrl = isValidEmail(email)
                 ? handleValidEmail(email, name)
-                : createErrorRedirectUrl(AuthErrors.OAUTH2_EMAIL_NULL_OR_INVALID_ERROR);
+                : createErrorRedirectUrl(AuthMessages.OAUTH2_EMAIL_NULL_OR_INVALID_ERROR);
 
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }
@@ -81,7 +81,7 @@ public class OAuth2SuccessFilter extends SimpleUrlAuthenticationSuccessHandler {
 
         return hasOauthAccess
                 ? createSuccessRedirectUrl(email, expirationAccessToken, expirationRefreshToken)
-                : createErrorRedirectUrl(AuthErrors.ACCESS_WITH_OAUTH2_ERROR);
+                : createErrorRedirectUrl(AuthMessages.ACCESS_WITH_OAUTH2_ERROR);
     }
 
     private String createSuccessRedirectUrl(String email, Date expirationAccessToken, Date expirationRefreshToken) {

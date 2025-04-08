@@ -5,6 +5,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.david.auth_layer_architecture.common.utils.JwtUtil;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.routes.AuthRoutes;
+import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +21,8 @@ import java.io.IOException;
 
 @Component
 @AllArgsConstructor
-public class OAuth2ErrorFilter extends OncePerRequestFilter {
+public class JwtChangePasswordFilter extends OncePerRequestFilter {
+
     private final JwtUtil jwtUtil;
 
     @Override
@@ -33,12 +35,12 @@ public class OAuth2ErrorFilter extends OncePerRequestFilter {
         String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION);
         String path = request.getRequestURI();
 
-        if (jwtToken != null && jwtToken.startsWith("Bearer ") && path.contains(AuthRoutes.OAUTH2_ERROR_URL)) {
+        if (jwtToken != null && jwtToken.startsWith("Bearer ") && path.contains(CredentialRoutes.CHANGE_PASSWORD_URL)) {
             jwtToken = jwtToken.replace("Bearer ", "");
 
             try {
                 DecodedJWT decodedJWT = jwtUtil.validateToken(jwtToken);
-                jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_ERROR_TOKEN);
+                jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_CHANGE_PASSWORD);
             } catch (JWTVerificationException ex) {
                 handleInvalidToken(response, ex.getMessage());
                 return;

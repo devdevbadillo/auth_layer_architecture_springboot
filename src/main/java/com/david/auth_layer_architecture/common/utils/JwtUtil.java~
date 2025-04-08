@@ -5,7 +5,8 @@ import java.util.UUID;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
-import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
+import com.david.auth_layer_architecture.common.utils.constants.errors.AuthErrors;
+import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -51,9 +52,9 @@ public class JwtUtil {
 
             return verifier.verify(token);
         } catch (TokenExpiredException ex){
-            throw new JWTVerificationException(AuthMessages.TOKEN_EXPIRED_ERROR);
+            throw new JWTVerificationException(AuthErrors.TOKEN_EXPIRED_ERROR);
         } catch (JWTVerificationException e) {
-            throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);
+            throw new JWTVerificationException(AuthErrors.INVALID_TOKEN_ERROR);
         }
 
     }
@@ -81,7 +82,7 @@ public class JwtUtil {
     public void validateTypeToken(DecodedJWT decodedJWT, String type) throws JWTVerificationException{
         String typeToken = this.getSpecificClaim(decodedJWT, "type").asString();
         if (!typeToken.equals(type)) {
-            throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);
+            throw new JWTVerificationException(AuthErrors.INVALID_TOKEN_ERROR);
         }
     }
 

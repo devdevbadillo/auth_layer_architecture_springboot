@@ -146,6 +146,42 @@ public class AuthController {
         return ResponseEntity.ok(authFacade.refreshToken(refreshToken));
     }
 
+    @Operation(
+            summary = "OAuth2 error",
+            description = "Endpoint for OAuth2 error",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Authentication error",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(
+                                            example = "{\"message\": \"Authentication error\"}"
+                                    )
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Forbidden",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(
+                                            example = "{\"message\": \"Invalid token\"}"
+                                    )
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "Internal server error",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(
+                                            example = "{\"message\": \"Internal server error\"}"
+                                    )
+                            )
+                    )
+            }
+    )
     @GetMapping(AuthRoutes.OAUTH2_ERROR_URL)
     public ResponseEntity<MessageResponse> authenticationOAuth2Error() {
         return ResponseEntity.ok(new MessageResponse("Authentication error"));

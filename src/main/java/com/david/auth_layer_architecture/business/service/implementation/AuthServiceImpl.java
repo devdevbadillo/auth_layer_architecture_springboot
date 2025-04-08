@@ -4,7 +4,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
-import com.david.auth_layer_architecture.common.utils.constants.errors.AuthErrors;
+import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
 import com.david.auth_layer_architecture.domain.dto.response.SignInResponse;
 import com.david.auth_layer_architecture.domain.entity.Credential;
 import com.david.auth_layer_architecture.persistence.CredentialRepostory;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 
 import com.david.auth_layer_architecture.business.service.interfaces.IAuthService;
 import com.david.auth_layer_architecture.common.utils.JwtUtil;
-import com.david.auth_layer_architecture.common.utils.constants.errors.CredentialErrors;
+import com.david.auth_layer_architecture.common.utils.constants.messages.CredentialMessages;
 import com.david.auth_layer_architecture.domain.dto.request.SignInRequest;
 import java.util.Date;
 
@@ -36,7 +36,7 @@ public class AuthServiceImpl implements IAuthService{
 
     @Override
     public SignInResponse signIn(SignInRequest signInRequest) throws BadCredentialsException, HaveAccessWithOAuth2Exception {
-        this.validateAcess(signInRequest.getEmail());
+        this.validateAccess(signInRequest.getEmail());
         Authentication authentication = this.authenticate(signInRequest.getEmail(), signInRequest.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -68,7 +68,7 @@ public class AuthServiceImpl implements IAuthService{
     public Authentication authenticate(String username, String password) throws BadCredentialsException {
         try {
             UserDetails userDetails = this.userDetailsServiceImpl.loadUserByUsername(username);
-            if (!passwordEncoder.matches(password, userDetails.getPassword())) throw new BadCredentialsException(CredentialErrors.PASSWORD_INCORRECT);
+            if (!passwordEncoder.matches(password, userDetails.getPassword())) throw new BadCredentialsException(CredentialMessages.PASSWORD_INCORRECT);
 
             return new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(), userDetails.getAuthorities());
         } catch (UsernameNotFoundException e) {
@@ -76,10 +76,10 @@ public class AuthServiceImpl implements IAuthService{
         }
     }
 
-    private void validateAcess(String email) throws HaveAccessWithOAuth2Exception {
+    private void validateAccess(String email) throws HaveAccessWithOAuth2Exception {
         Credential credential = credentialRepostory.getCredentialByEmail(email);
         if (credential != null && credential.getIsAccesOauth() ){
-            throw new HaveAccessWithOAuth2Exception(AuthErrors.ACCESS_WITH_OAUTH2_ERROR);
+            throw new HaveAccessWithOAuth2Exception(AuthMessages.ACCESS_WITH_OAUTH2_ERROR);
         }
     }
 }

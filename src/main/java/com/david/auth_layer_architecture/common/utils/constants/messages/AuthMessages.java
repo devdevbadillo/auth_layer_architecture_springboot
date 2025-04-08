@@ -1,6 +1,6 @@
-package com.david.auth_layer_architecture.common.utils.constants.errors;
+package com.david.auth_layer_architecture.common.utils.constants.messages;
 
-public class AuthErrors {
+public class AuthMessages {
 
     public static final String INVALID_TOKEN_ERROR = "Invalid token";
     public static final String OAUTH2_EMAIL_NULL_OR_INVALID_ERROR = "The authentication provider did not provide a valid email address";

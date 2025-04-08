@@ -10,7 +10,6 @@ import com.david.auth_layer_architecture.business.facade.interfaces.IAuthFacade;
 import com.david.auth_layer_architecture.business.service.interfaces.IAuthService;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
 import com.david.auth_layer_architecture.domain.dto.request.SignInRequest;
-import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
 
 @Service
 @AllArgsConstructor

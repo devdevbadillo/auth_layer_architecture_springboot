@@ -3,8 +3,10 @@ package com.david.auth_layer_architecture.presentation.security;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.routes.AuthRoutes;
 import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
+import com.david.auth_layer_architecture.presentation.security.filters.JwtChangePasswordFilter;
 import com.david.auth_layer_architecture.presentation.security.filters.OAuth2ErrorFilter;
 import com.david.auth_layer_architecture.presentation.security.filters.OAuth2SuccessFilter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +30,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -36,7 +39,7 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final OAuth2SuccessFilter oAuth2SuccessFilter;
 
-    @Value("${frontend.uri}")
+    @Value("${uri.frontend}")
     private String frontendUri;
 
     public SecurityConfig(JwtUtil jwtUtil, OAuth2SuccessFilter oAuth2SuccessFilter) {
@@ -75,14 +78,10 @@ public class SecurityConfig {
                         })
                 )
             .addFilterBefore(new JwtValidateFilter(jwtUtil), BasicAuthenticationFilter.class)
-            .addFilterBefore(new OAuth2ErrorFilter(jwtUtil), JwtValidateFilter.class);
+            .addFilterBefore(new OAuth2ErrorFilter(jwtUtil), JwtValidateFilter.class)
+            .addFilterBefore(new JwtChangePasswordFilter(jwtUtil), JwtValidateFilter.class);
 
         return httpSecurity.build();
-    }
-    
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
     @Bean

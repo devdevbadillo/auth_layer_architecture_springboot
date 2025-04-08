@@ -14,5 +14,5 @@ public interface ICredentialFacade {
 
    MessageResponse recoveryAccount(RecoveryAccountRequest recoveryAccountRequest) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException;
 
-   MessageResponse changePassword(ChangePasswordRequest changePasswordRequest);
+   MessageResponse changePassword(ChangePasswordRequest changePasswordRequest, String email) throws HaveAccessWithOAuth2Exception, UserNotFoundException;
 }

@@ -41,6 +41,10 @@ public class JwtChangePasswordFilter extends OncePerRequestFilter {
             try {
                 DecodedJWT decodedJWT = jwtUtil.validateToken(jwtToken);
                 jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_CHANGE_PASSWORD);
+
+                String username = jwtUtil.extractUser(decodedJWT);
+
+                request.setAttribute("email", username);
             } catch (JWTVerificationException ex) {
                 handleInvalidToken(response, ex.getMessage());
                 return;

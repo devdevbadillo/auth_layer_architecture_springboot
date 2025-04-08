@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -182,7 +183,7 @@ public class CredentialController {
             )
     })
     @GetMapping(CredentialRoutes.CHANGE_PASSWORD_URL)
-    public ResponseEntity<MessageResponse> changePassword() {
+    public ResponseEntity<MessageResponse> viewChangePassword() {
         return ResponseEntity.ok(new MessageResponse("Ok"));
     }
 
@@ -233,8 +234,10 @@ public class CredentialController {
     })
     @PatchMapping(CredentialRoutes.CHANGE_PASSWORD_URL)
     public ResponseEntity<MessageResponse> changePassword(
-            @RequestBody @Valid ChangePasswordRequest changePasswordRequest
-    ){
-        return ResponseEntity.ok(credentialFacade.changePassword(changePasswordRequest));
+            @RequestBody @Valid ChangePasswordRequest changePasswordRequest,
+            HttpServletRequest request
+    ) throws HaveAccessWithOAuth2Exception, UserNotFoundException {
+        String email =(String) request.getAttribute("email");
+        return ResponseEntity.ok(credentialFacade.changePassword(changePasswordRequest, email));
     }
 }

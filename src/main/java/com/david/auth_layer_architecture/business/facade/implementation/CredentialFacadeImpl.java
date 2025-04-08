@@ -35,17 +35,20 @@ public class CredentialFacadeImpl implements ICredentialFacade{
     }
 
     @Override
-    public MessageResponse changePassword(ChangePasswordRequest changePasswordRequest){
-        return this.credentialService.changePassword(changePasswordRequest.getPassword(), changePasswordRequest.getRepeatPassword());
+    public MessageResponse changePassword(ChangePasswordRequest changePasswordRequest, String email) throws HaveAccessWithOAuth2Exception, UserNotFoundException {
+        return this.credentialService.changePassword(encodePassword(changePasswordRequest.getPassword()), email);
     }
 
     private Credential buildCredential(SignUpRequest signUpRequest){
-        String passwordHash = passwordEncoder.encode(signUpRequest.getPassword());
         return Credential.builder()
                 .email(signUpRequest.getEmail())
-                .password(passwordHash)
+                .password(encodePassword(signUpRequest.getPassword()))
                 .name(signUpRequest.getName())
                 .isAccesOauth(false)
                 .build();
+    }
+
+    private String encodePassword(String password){
+        return passwordEncoder.encode(password);
     }
 }

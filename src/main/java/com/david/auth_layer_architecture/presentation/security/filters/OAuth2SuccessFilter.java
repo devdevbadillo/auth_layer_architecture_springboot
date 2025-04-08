@@ -95,7 +95,7 @@ public class OAuth2SuccessFilter extends SimpleUrlAuthenticationSuccessHandler {
     private String createErrorRedirectUrl(String errorMessage) {
         String encodedErrorMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
         Date expirationErrorToken = jwtUtil.calculateExpirationSecondsToken(CommonConstants.EXPIRATION_ERROR_TOKEN_SECONDS);
-        String errorToken = jwtUtil.generateToken(null, expirationErrorToken, CommonConstants.TYPE_ERROR_TOKEN);
+        String errorToken = jwtUtil.generateToken(expirationErrorToken, CommonConstants.TYPE_ERROR_TOKEN);
 
         return String.format("%s?error=%s&errorToken=%s",
                 CommonConstants.AUTH_SOCIAL_MEDIA_FRONT_URL, encodedErrorMessage, errorToken);

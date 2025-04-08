@@ -40,6 +40,19 @@ public class JwtUtil {
                 .sign(algorithm);
     }
 
+    public String generateToken(Date expirationToken, String typeToken) {
+        Algorithm algorithm = Algorithm.HMAC256(this.key);
+
+        return JWT.create()
+                .withIssuer(this.userGenerator)
+                .withClaim("type", typeToken)
+                .withIssuedAt(new Date())
+                .withJWTId(UUID.randomUUID().toString())
+                .withExpiresAt(expirationToken)
+                .withNotBefore(new Date(System.currentTimeMillis()))
+                .sign(algorithm);
+    }
+
 
     public DecodedJWT validateToken(String token) throws JWTVerificationException{
         try {

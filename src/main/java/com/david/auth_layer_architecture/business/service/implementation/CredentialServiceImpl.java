@@ -6,6 +6,7 @@ import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFou
 import com.david.auth_layer_architecture.common.utils.JwtUtil;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
+import com.david.auth_layer_architecture.domain.dto.request.ChangePasswordRequest;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -48,8 +49,13 @@ public class CredentialServiceImpl implements ICredentialService{
     }
 
     @Override
-    public MessageResponse changePassword(String email, String password) {
-        return null;
+    public MessageResponse changePassword(String password, String email) throws HaveAccessWithOAuth2Exception, UserNotFoundException {
+        Credential credential = this.validateAccess(email);
+
+        credential.setPassword(password);
+        credentialRepostory.save(credential);
+
+        return new MessageResponse(CredentialMessages.CHANGE_PASSWORD_SUCCESSFULLY);
     }
 
     private void validateUniqueUser(String email) throws UserAlreadyExistException{
@@ -62,10 +68,11 @@ public class CredentialServiceImpl implements ICredentialService{
         return credential;
     }
 
-    private void validateAccess(String email) throws HaveAccessWithOAuth2Exception, UserNotFoundException{
+    private Credential validateAccess(String email) throws HaveAccessWithOAuth2Exception, UserNotFoundException{
         Credential credential = this.isRegisteredUser(email);
         if ( credential.getIsAccesOauth() ){
             throw new HaveAccessWithOAuth2Exception(AuthMessages.ACCESS_WITH_OAUTH2_ERROR);
         }
+        return credential;
     }
 }

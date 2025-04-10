@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.util.Collection;
 
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
+import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
+import com.david.auth_layer_architecture.domain.entity.AccessToken;
+import com.david.auth_layer_architecture.persistence.AccessTokenRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -28,9 +31,10 @@ import jakarta.validation.constraints.NotNull;
 
 @Component
 @AllArgsConstructor
-public class JwtValidateFilter extends OncePerRequestFilter {
+public class JwtAccessAppFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final AccessTokenRepository accessTokenRepository;
 
     @Override
     protected void doFilterInternal(
@@ -49,15 +53,20 @@ public class JwtValidateFilter extends OncePerRequestFilter {
                 DecodedJWT decodedJWT = jwtUtil.validateToken(jwtToken);
                 jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_ACCESS_TOKEN);
 
-                String username = jwtUtil.extractUser(decodedJWT);
-                String commaSeparetedAuthorities = jwtUtil.getSpecificClaim(decodedJWT, "authorities").asString();
+                String accessTokenId = jwtUtil.getSpecificClaim(decodedJWT, "jti").asString();
+                AccessToken accessToken = this.accessTokenRepository.getTokenByAccessTokenId(accessTokenId);
+                if( accessToken == null ) throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);
 
-                Collection<? extends GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList(commaSeparetedAuthorities);
+                String username = jwtUtil.extractUser(decodedJWT);
+                String authorities = jwtUtil.getSpecificClaim(decodedJWT, "authorities").asString();
+
+                Collection<? extends GrantedAuthority> authoritiesList = AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
 
                 SecurityContext context = SecurityContextHolder.getContext();
-                Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
+                Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authoritiesList);
 
                 context.setAuthentication(authentication);
+                request.setAttribute("accessTokenId", accessTokenId);
                 SecurityContextHolder.setContext(context);
             } catch (JWTVerificationException ex) {
                 handleInvalidToken(response, ex.getMessage());

@@ -1,12 +1,13 @@
 package com.david.auth_layer_architecture.business.service.implementation;
 
+import com.david.auth_layer_architecture.business.service.interfaces.IAccessTokenService;
 import com.david.auth_layer_architecture.business.service.interfaces.IEmailService;
+import com.david.auth_layer_architecture.common.exceptions.accessToken.AlreadyHaveAccessTokenToChangePasswordException;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
 import com.david.auth_layer_architecture.common.utils.JwtUtil;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
-import com.david.auth_layer_architecture.domain.dto.request.ChangePasswordRequest;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,11 +27,12 @@ public class CredentialServiceImpl implements ICredentialService{
 
     private final CredentialRepostory credentialRepostory;
     private final IEmailService emailService;
+    private final IAccessTokenService accessTokenService;
     private final JwtUtil jwtUtil;
 
     @Override
     public MessageResponse signUp(Credential credential) throws UserAlreadyExistException {
-        this.validateUniqueUser(credential.getEmail());
+        this.isUniqueUser(credential.getEmail());
 
         credentialRepostory.save(credential);
 
@@ -38,27 +40,34 @@ public class CredentialServiceImpl implements ICredentialService{
     }
 
     @Override
-    public MessageResponse recoveryAccount(String email) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException {
-        this.validateAccess(email);
+    public MessageResponse recoveryAccount(
+            String email
+    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException {
+        Credential credential = this.hasAccessWithOAuth2(email);
+        this.accessTokenService.hasAccessTokenToChangePassword(credential);
 
         Date expirationAccessToken = jwtUtil.calculateExpirationMinutesToken(CommonConstants.EXPIRATION_CHANGE_PASSWORD_TOKEN_MINUTES);
         String accessToken = jwtUtil.generateToken(email, expirationAccessToken, CommonConstants.TYPE_CHANGE_PASSWORD );
 
         emailService.sendEmailRecoveryAccount(email, accessToken);
+
+        this.accessTokenService.saveAccessTokenToChangePassword(accessToken, credential);
+
         return new MessageResponse(CredentialMessages.RECOVERY_ACCOUNT_INSTRUCTIONS_SENT);
     }
 
     @Override
-    public MessageResponse changePassword(String password, String email) throws HaveAccessWithOAuth2Exception, UserNotFoundException {
-        Credential credential = this.validateAccess(email);
+    public MessageResponse changePassword(String password, String email, String accessTokenId) throws HaveAccessWithOAuth2Exception, UserNotFoundException {
+        Credential credential = this.hasAccessWithOAuth2(email);
 
         credential.setPassword(password);
         credentialRepostory.save(credential);
 
+        accessTokenService.deleteAccessToken(accessTokenId);
         return new MessageResponse(CredentialMessages.CHANGE_PASSWORD_SUCCESSFULLY);
     }
 
-    private void validateUniqueUser(String email) throws UserAlreadyExistException{
+    private void isUniqueUser(String email) throws UserAlreadyExistException{
         if (credentialRepostory.getCredentialByEmail(email) != null) throw new UserAlreadyExistException(CredentialMessages.USER_ALREADY_EXISTS);
     }
 
@@ -68,11 +77,12 @@ public class CredentialServiceImpl implements ICredentialService{
         return credential;
     }
 
-    private Credential validateAccess(String email) throws HaveAccessWithOAuth2Exception, UserNotFoundException{
+    private Credential hasAccessWithOAuth2(String email) throws HaveAccessWithOAuth2Exception, UserNotFoundException{
         Credential credential = this.isRegisteredUser(email);
         if ( credential.getIsAccesOauth() ){
             throw new HaveAccessWithOAuth2Exception(AuthMessages.ACCESS_WITH_OAUTH2_ERROR);
         }
         return credential;
     }
+
 }

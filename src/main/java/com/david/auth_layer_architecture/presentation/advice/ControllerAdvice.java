@@ -3,6 +3,7 @@ package com.david.auth_layer_architecture.presentation.advice;
 import java.util.Map;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.david.auth_layer_architecture.common.exceptions.accessToken.AlreadyHaveAccessTokenToChangePasswordException;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
 import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolationException;
@@ -76,5 +77,10 @@ public class ControllerAdvice {
     @ExceptionHandler( MessagingException.class )
     private ResponseEntity<Map<String, String>> handleMessagingException(MessagingException ex){
         return new ResponseEntity<>(Map.of(KEY_MESSAGE, ex.getMessage()), HttpStatus.FAILED_DEPENDENCY);
+    }
+
+    @ExceptionHandler( AlreadyHaveAccessTokenToChangePasswordException.class )
+    private ResponseEntity<Map<String, String>> handleAlreadyHaveAccessTokenToChangePasswordException(AlreadyHaveAccessTokenToChangePasswordException ex){
+        return new ResponseEntity<>(Map.of(KEY_MESSAGE, ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 }

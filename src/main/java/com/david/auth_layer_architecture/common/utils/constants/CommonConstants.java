@@ -9,14 +9,14 @@ public class CommonConstants {
 
 
     // Expiration token in minutes and days
-    public static final Integer EXPIRATION_ACCESS_TOKEN_MINUTES = 60;
+    public static final Integer EXPIRATION_ACCESS_TOKEN_MINUTES = 2;
     public static final Integer EXPIRATION_CHANGE_PASSWORD_TOKEN_MINUTES = 10;
     public static final Integer EXPIRATION_REFRESH_TOKEN_DAYS = 7;
     public static final Integer EXPIRATION_ERROR_TOKEN_SECONDS = 10;
 
     // Type token
-    public static final String TYPE_ACCESS_TOKEN = "access_token";
+    public static final String TYPE_ACCESS_TOKEN = "access_app";
     public static final String TYPE_CHANGE_PASSWORD = "change_password";
-    public static final String TYPE_REFRESH_TOKEN = "refresh_token";
+    public static final String TYPE_REFRESH_TOKEN = "refresh_token_to_access_app";
     public static final String TYPE_ERROR_TOKEN= "error";
 }

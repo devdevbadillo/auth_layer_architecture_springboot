@@ -18,7 +18,7 @@ public class EmailServiceImpl implements IEmailService {
     }
 
     @Override
-    public void sendEmailRecoveryAccount(String email, String token) throws MessagingException{
+    public void sendEmailRecoveryAccount(String email, String accessToken) throws MessagingException{
         String htmlMsg = """
                         <h1>Change Password Request</h1>
                         <p>We received a request to reset your password for your account associated with this email address.</p>
@@ -28,7 +28,7 @@ public class EmailServiceImpl implements IEmailService {
                         </div>
                         <p>To change your password, please click the link below:</p>
                         <ol>
-                            <li><a href="http://localhost:4200/auth/change-password?token=%s">Change Your Password</a></li>
+                            <li><a href="http://localhost:4200/auth/change-password?accessToken=%s">Change Your Password</a></li>
                         </ol>
                         <p>If you didn't request a password reset, you can safely ignore this email.</p>
 
@@ -47,7 +47,7 @@ public class EmailServiceImpl implements IEmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setTo(email);
             helper.setSubject("Change Password Request");
-            helper.setText(String.format(htmlMsg, email, token), true); // true indicates HTML
+            helper.setText(String.format(htmlMsg, email, accessToken), true); // true indicates HTML
             helper.setFrom("noreply@apptest.com");
 
             mailSender.send(message);

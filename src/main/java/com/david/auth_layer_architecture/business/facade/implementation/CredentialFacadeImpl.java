@@ -1,7 +1,9 @@
 package com.david.auth_layer_architecture.business.facade.implementation;
 
+import com.david.auth_layer_architecture.common.exceptions.accessToken.AlreadyHaveAccessTokenToChangePasswordException;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
+import com.david.auth_layer_architecture.common.mapper.CredentialEntityMapper;
 import com.david.auth_layer_architecture.domain.dto.request.ChangePasswordRequest;
 import com.david.auth_layer_architecture.domain.dto.request.RecoveryAccountRequest;
 import jakarta.mail.MessagingException;
@@ -21,34 +23,27 @@ import com.david.auth_layer_architecture.domain.entity.Credential;
 public class CredentialFacadeImpl implements ICredentialFacade{
 
     private final ICredentialService credentialService;
-    private final PasswordEncoder passwordEncoder;
+    private final CredentialEntityMapper credentialEntityMapper;
 
     @Override
     public MessageResponse signUp(SignUpRequest signUpRequest) throws UserAlreadyExistException {
-        Credential credential = this.buildCredential(signUpRequest);
+        Credential credential = this.credentialEntityMapper.toCredentialEntity(signUpRequest);
         return credentialService.signUp(credential);
     }
 
     @Override
-    public MessageResponse recoveryAccount(RecoveryAccountRequest recoveryAccountRequest) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException {
+    public MessageResponse recoveryAccount(
+            RecoveryAccountRequest recoveryAccountRequest
+    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException {
         return this.credentialService.recoveryAccount(recoveryAccountRequest.getEmail());
     }
 
     @Override
-    public MessageResponse changePassword(ChangePasswordRequest changePasswordRequest, String email) throws HaveAccessWithOAuth2Exception, UserNotFoundException {
-        return this.credentialService.changePassword(encodePassword(changePasswordRequest.getPassword()), email);
+    public MessageResponse changePassword(
+            ChangePasswordRequest changePasswordRequest, String email, String accessTokenId
+    ) throws HaveAccessWithOAuth2Exception, UserNotFoundException {
+        String passwordHash = this.credentialEntityMapper.encodePassword(changePasswordRequest.getPassword());
+        return this.credentialService.changePassword(passwordHash, email, accessTokenId);
     }
 
-    private Credential buildCredential(SignUpRequest signUpRequest){
-        return Credential.builder()
-                .email(signUpRequest.getEmail())
-                .password(encodePassword(signUpRequest.getPassword()))
-                .name(signUpRequest.getName())
-                .isAccesOauth(false)
-                .build();
-    }
-
-    private String encodePassword(String password){
-        return passwordEncoder.encode(password);
-    }
 }

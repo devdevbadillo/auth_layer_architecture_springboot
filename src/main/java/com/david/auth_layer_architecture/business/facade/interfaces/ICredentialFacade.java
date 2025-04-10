@@ -1,5 +1,6 @@
 package com.david.auth_layer_architecture.business.facade.interfaces;
 
+import com.david.auth_layer_architecture.common.exceptions.accessToken.AlreadyHaveAccessTokenToChangePasswordException;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserAlreadyExistException;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
@@ -12,7 +13,11 @@ import jakarta.mail.MessagingException;
 public interface ICredentialFacade {
    MessageResponse signUp(SignUpRequest signUpRequest) throws UserAlreadyExistException;
 
-   MessageResponse recoveryAccount(RecoveryAccountRequest recoveryAccountRequest) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException;
+   MessageResponse recoveryAccount(
+           RecoveryAccountRequest recoveryAccountRequest
+   ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException;
 
-   MessageResponse changePassword(ChangePasswordRequest changePasswordRequest, String email) throws HaveAccessWithOAuth2Exception, UserNotFoundException;
+   MessageResponse changePassword(
+           ChangePasswordRequest changePasswordRequest, String email, String accessTokenId
+   ) throws HaveAccessWithOAuth2Exception, UserNotFoundException;
 }

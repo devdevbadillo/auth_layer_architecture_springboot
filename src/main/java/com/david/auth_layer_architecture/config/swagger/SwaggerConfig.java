@@ -1,4 +1,4 @@
-package com.david.auth_layer_architecture.swagger;
+package com.david.auth_layer_architecture.config.swagger;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;

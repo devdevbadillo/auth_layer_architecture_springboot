@@ -4,8 +4,10 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.david.auth_layer_architecture.common.utils.JwtUtil;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
-import com.david.auth_layer_architecture.common.utils.constants.routes.AuthRoutes;
+import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
 import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
+import com.david.auth_layer_architecture.domain.entity.AccessToken;
+import com.david.auth_layer_architecture.persistence.AccessTokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,12 +20,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Date;
 
 @Component
 @AllArgsConstructor
 public class JwtChangePasswordFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final AccessTokenRepository accessTokenRepository;
+
 
     @Override
     protected void doFilterInternal(
@@ -43,7 +48,13 @@ public class JwtChangePasswordFilter extends OncePerRequestFilter {
                 jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_CHANGE_PASSWORD);
 
                 String username = jwtUtil.extractUser(decodedJWT);
+                String accessTokenId = jwtUtil.getSpecificClaim(decodedJWT, "jti").asString();
 
+                AccessToken accessToken = this.accessTokenRepository.getTokenByAccessTokenId(accessTokenId);
+
+                if( accessToken == null ) throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);
+
+                request.setAttribute("accessTokenId", accessTokenId);
                 request.setAttribute("email", username);
             } catch (JWTVerificationException ex) {
                 handleInvalidToken(response, ex.getMessage());

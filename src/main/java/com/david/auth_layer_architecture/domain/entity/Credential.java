@@ -1,15 +1,11 @@
 package com.david.auth_layer_architecture.domain.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Entity
 @Data
@@ -32,4 +28,8 @@ public class Credential {
 
     @Column(nullable = false, name = "is_access_oauth")
     private Boolean isAccesOauth;
+
+    @OneToMany(targetEntity = AccessToken.class, cascade = CascadeType.ALL,  fetch = FetchType.LAZY)
+    @JoinColumn(name = "credential_id")
+    private List<AccessToken> accessTokens;
 }

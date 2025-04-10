@@ -1,10 +1,13 @@
 package com.david.auth_layer_architecture.presentation.security.filters;
 
+import com.david.auth_layer_architecture.business.service.interfaces.IAccessTokenService;
 import com.david.auth_layer_architecture.business.service.interfaces.ICredentialService;
+import com.david.auth_layer_architecture.business.service.interfaces.IRefreshTokenService;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserAlreadyExistException;
 import com.david.auth_layer_architecture.common.utils.JwtUtil;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
+import com.david.auth_layer_architecture.domain.entity.AccessToken;
 import com.david.auth_layer_architecture.domain.entity.Credential;
 import com.david.auth_layer_architecture.persistence.CredentialRepostory;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,11 +29,21 @@ public class OAuth2SuccessFilter extends SimpleUrlAuthenticationSuccessHandler {
     private final JwtUtil jwtUtil;
     private final ICredentialService credentialService;
     private final CredentialRepostory credentialRepostory;
+    private final IRefreshTokenService refreshTokenService;
+    private final IAccessTokenService accessTokenService;
 
-    public OAuth2SuccessFilter(JwtUtil jwtUtil, ICredentialService credentialService, CredentialRepostory credentialRepostory) {
+    public OAuth2SuccessFilter(
+            JwtUtil jwtUtil,
+            ICredentialService credentialService,
+            CredentialRepostory credentialRepostory,
+            IRefreshTokenService refreshTokenService,
+            IAccessTokenService accessTokenService
+    ) {
         this.credentialService = credentialService;
         this.jwtUtil = jwtUtil;
         this.credentialRepostory = credentialRepostory;
+        this.refreshTokenService = refreshTokenService;
+        this.accessTokenService = accessTokenService;
     }
 
     @Override
@@ -75,18 +88,20 @@ public class OAuth2SuccessFilter extends SimpleUrlAuthenticationSuccessHandler {
     }
 
     private String handleExistingUser(String email, Date expirationAccessToken, Date expirationRefreshToken) {
-        boolean hasOauthAccess = Optional.ofNullable(credentialRepostory.getCredentialByEmail(email))
-                .map(Credential::getIsAccesOauth)
-                .orElse(false);
+        Credential credential = credentialRepostory.getCredentialByEmail(email);
 
-        return hasOauthAccess
+        return credential.getIsAccesOauth()
                 ? createSuccessRedirectUrl(email, expirationAccessToken, expirationRefreshToken)
                 : createErrorRedirectUrl(AuthMessages.ACCESS_WITH_OAUTH2_ERROR);
     }
 
     private String createSuccessRedirectUrl(String email, Date expirationAccessToken, Date expirationRefreshToken) {
+        Credential credential = credentialRepostory.getCredentialByEmail(email);
         String accessToken = jwtUtil.generateToken(email, expirationAccessToken, CommonConstants.TYPE_ACCESS_TOKEN);
         String refreshToken = jwtUtil.generateToken(email, expirationRefreshToken, CommonConstants.TYPE_REFRESH_TOKEN);
+
+        AccessToken accessTokenEntity = this.accessTokenService.saveAccessTokenToAccessApp(accessToken, credential);
+        this.refreshTokenService.saveRefreshTokenToAccessApp(refreshToken, credential, accessTokenEntity);
 
         return String.format("%s?accessToken=%s&refreshToken=%s",
                 CommonConstants.AUTH_SOCIAL_MEDIA_FRONT_URL, accessToken, refreshToken);

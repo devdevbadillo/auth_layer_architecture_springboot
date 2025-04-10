@@ -7,5 +7,5 @@ import com.david.auth_layer_architecture.domain.entity.Credential;
 
 @Repository
 public interface CredentialRepostory extends CrudRepository<Credential, Long>{
-    public Credential getCredentialByEmail(String email);
+    Credential getCredentialByEmail(String email);
 }

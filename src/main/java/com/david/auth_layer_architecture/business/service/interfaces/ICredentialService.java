@@ -17,4 +17,8 @@ public interface ICredentialService {
     ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException;
 
     MessageResponse changePassword(String password, String email, String accessTokenId) throws HaveAccessWithOAuth2Exception, UserNotFoundException;
+
+    Credential isRegisteredUser(String email) throws UserNotFoundException;
+
+    void hasAccessWithOAuth2(Credential credential) throws HaveAccessWithOAuth2Exception;
 }

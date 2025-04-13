@@ -7,18 +7,16 @@ import com.david.auth_layer_architecture.domain.entity.AccessToken;
 import com.david.auth_layer_architecture.domain.entity.Credential;
 import com.david.auth_layer_architecture.domain.entity.RefreshToken;
 import com.david.auth_layer_architecture.persistence.RefreshTokenRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@AllArgsConstructor
 @Service
 public class RefreshTokenServiceImpl implements IRefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenEntityMapper refreshTokenEntityMapper;
 
-    public RefreshTokenServiceImpl(RefreshTokenRepository refreshTokenRepository, RefreshTokenEntityMapper refreshTokenEntityMapper) {
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.refreshTokenEntityMapper = refreshTokenEntityMapper;
-    }
 
     @Override
     public void saveRefreshTokenToAccessApp(String refreshToken, Credential credential, AccessToken accessToken) {

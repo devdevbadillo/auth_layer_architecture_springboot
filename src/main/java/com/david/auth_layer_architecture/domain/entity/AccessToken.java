@@ -16,7 +16,7 @@ import java.util.Date;
 @Table(name = "access_token")
 public class AccessToken {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "access_token_id", unique = true, nullable = false)

@@ -142,7 +142,7 @@ public class AuthController {
     @PostMapping(AuthRoutes.REFRESH_TOKEN_URL)
     public ResponseEntity<SignInResponse> refreshToken(
             @RequestHeader @NotBlank @NotNull String refreshToken
-    )throws  UserNotFoundException{
+    ){
         return ResponseEntity.ok(authFacade.refreshToken(refreshToken));
     }
 

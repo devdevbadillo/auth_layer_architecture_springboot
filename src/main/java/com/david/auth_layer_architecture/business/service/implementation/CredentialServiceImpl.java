@@ -43,7 +43,8 @@ public class CredentialServiceImpl implements ICredentialService{
     public MessageResponse recoveryAccount(
             String email
     ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException {
-        Credential credential = this.hasAccessWithOAuth2(email);
+        Credential credential = this.isRegisteredUser(email);
+        this.hasAccessWithOAuth2(credential);
         this.accessTokenService.hasAccessTokenToChangePassword(credential);
 
         Date expirationAccessToken = jwtUtil.calculateExpirationMinutesToken(CommonConstants.EXPIRATION_CHANGE_PASSWORD_TOKEN_MINUTES);
@@ -58,7 +59,8 @@ public class CredentialServiceImpl implements ICredentialService{
 
     @Override
     public MessageResponse changePassword(String password, String email, String accessTokenId) throws HaveAccessWithOAuth2Exception, UserNotFoundException {
-        Credential credential = this.hasAccessWithOAuth2(email);
+        Credential credential = this.isRegisteredUser(email);
+        this.hasAccessWithOAuth2(credential);
 
         credential.setPassword(password);
         credentialRepostory.save(credential);
@@ -67,22 +69,23 @@ public class CredentialServiceImpl implements ICredentialService{
         return new MessageResponse(CredentialMessages.CHANGE_PASSWORD_SUCCESSFULLY);
     }
 
-    private void isUniqueUser(String email) throws UserAlreadyExistException{
-        if (credentialRepostory.getCredentialByEmail(email) != null) throw new UserAlreadyExistException(CredentialMessages.USER_ALREADY_EXISTS);
-    }
 
-    private Credential isRegisteredUser(String email) throws UserNotFoundException{
+    @Override
+    public Credential isRegisteredUser(String email) throws UserNotFoundException{
         Credential credential = credentialRepostory.getCredentialByEmail(email);
         if (credential == null) throw new UserNotFoundException(CredentialMessages.USER_NOT_REGISTERED);
         return credential;
     }
 
-    private Credential hasAccessWithOAuth2(String email) throws HaveAccessWithOAuth2Exception, UserNotFoundException{
-        Credential credential = this.isRegisteredUser(email);
+    @Override
+    public void hasAccessWithOAuth2(Credential credential) throws HaveAccessWithOAuth2Exception{
         if ( credential.getIsAccesOauth() ){
             throw new HaveAccessWithOAuth2Exception(AuthMessages.ACCESS_WITH_OAUTH2_ERROR);
         }
-        return credential;
+    }
+
+    private void isUniqueUser(String email) throws UserAlreadyExistException{
+        if (credentialRepostory.getCredentialByEmail(email) != null) throw new UserAlreadyExistException(CredentialMessages.USER_ALREADY_EXISTS);
     }
 
 }

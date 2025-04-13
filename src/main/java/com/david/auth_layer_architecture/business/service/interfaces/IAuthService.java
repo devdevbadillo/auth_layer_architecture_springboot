@@ -13,6 +13,6 @@ import java.io.IOException;
 public interface IAuthService {
     SignInResponse signIn(SignInRequest signInRequest) throws BadCredentialsException, HaveAccessWithOAuth2Exception;
 
-    SignInResponse refreshToken(String refreshToken) throws UserNotFoundException;
+    SignInResponse refreshToken(String refreshToken);
 
 }

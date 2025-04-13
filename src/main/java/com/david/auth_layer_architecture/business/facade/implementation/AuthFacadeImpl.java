@@ -23,9 +23,7 @@ public class AuthFacadeImpl implements IAuthFacade{
     }
 
     @Override
-    public SignInResponse refreshToken(String refreshToken) throws UserNotFoundException {
+    public SignInResponse refreshToken(String refreshToken){
         return this.authService.refreshToken(refreshToken);
     }
-
-
 }

@@ -1,6 +1,7 @@
 package com.david.auth_layer_architecture.business.service.implementation;
 
 import com.david.auth_layer_architecture.business.service.interfaces.IAccessTokenService;
+import com.david.auth_layer_architecture.business.service.interfaces.ITypeTokenService;
 import com.david.auth_layer_architecture.common.exceptions.accessToken.AlreadyHaveAccessTokenToChangePasswordException;
 import com.david.auth_layer_architecture.common.mapper.AccessTokenEntityMapper;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
@@ -10,30 +11,23 @@ import com.david.auth_layer_architecture.domain.entity.Credential;
 import com.david.auth_layer_architecture.domain.entity.TypeToken;
 import com.david.auth_layer_architecture.persistence.AccessTokenRepository;
 import com.david.auth_layer_architecture.persistence.TypeTokenRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
+@AllArgsConstructor
 @Service
 public class AccessTokenServiceImpl implements IAccessTokenService {
 
     private final AccessTokenRepository accessTokenRepository;
-    private final TypeTokenRepository typeTokenRepository;
+    private final ITypeTokenService typeTokenService;
     private final AccessTokenEntityMapper accessTokenEntityMapper;
 
-    public AccessTokenServiceImpl(
-            AccessTokenRepository accessTokenRepository,
-            TypeTokenRepository typeTokenRepository,
-            AccessTokenEntityMapper accessTokenEntityMapper
-    ) {
-        this.accessTokenRepository = accessTokenRepository;
-        this.typeTokenRepository = typeTokenRepository;
-        this.accessTokenEntityMapper = accessTokenEntityMapper;
-    }
 
     @Override
     public void hasAccessTokenToChangePassword(Credential credential) throws AlreadyHaveAccessTokenToChangePasswordException {
-        TypeToken typeToken = typeTokenRepository.findByType(CommonConstants.TYPE_CHANGE_PASSWORD);
+        TypeToken typeToken = typeTokenService.getTypeToken(CommonConstants.TYPE_CHANGE_PASSWORD);
         AccessToken accessToken = accessTokenRepository.getTokenByCredentialAndTypeToken(credential, typeToken);
 
         if (accessToken != null && ( accessToken.getExpirationDate().compareTo(new Date()) ) > 0) {
@@ -43,7 +37,7 @@ public class AccessTokenServiceImpl implements IAccessTokenService {
 
     @Override
     public void saveAccessTokenToChangePassword(String accessToken, Credential credential) {
-        TypeToken typeToken = typeTokenRepository.findByType(CommonConstants.TYPE_CHANGE_PASSWORD);
+        TypeToken typeToken = typeTokenService.getTypeToken(CommonConstants.TYPE_CHANGE_PASSWORD);
         AccessToken oldAccessToken = accessTokenRepository.getTokenByCredentialAndTypeToken(credential, typeToken);
         AccessToken newAccessToken = accessTokenEntityMapper.toTokenEntity(accessToken, credential, CommonConstants.TYPE_CHANGE_PASSWORD);
 
@@ -52,7 +46,7 @@ public class AccessTokenServiceImpl implements IAccessTokenService {
             return;
         }
 
-        setOldAccessTokenToChangePassword(oldAccessToken, newAccessToken);
+        this.setOldAccessTokenToChangePassword(oldAccessToken, newAccessToken);
         accessTokenRepository.save(oldAccessToken);
     }
 
@@ -74,10 +68,9 @@ public class AccessTokenServiceImpl implements IAccessTokenService {
         return this.accessTokenRepository.getTokenByAccessTokenId(accessTokenId);
     }
 
-
     @Override
     public void deleteAccessToken(String accessTokenId) {
-        accessTokenRepository.delete( accessTokenRepository.getTokenByAccessTokenId(accessTokenId) );
+        accessTokenRepository.delete( this.getTokenByAccessTokenId(accessTokenId) );
     }
 
     private void setOldAccessTokenToChangePassword(AccessToken oldAccessToken, AccessToken newAccessToken) {

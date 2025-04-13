@@ -16,7 +16,7 @@ import java.util.Date;
 @Table(name = "refresh_token")
 public class RefreshToken {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne(targetEntity = AccessToken.class, cascade = {CascadeType.MERGE, CascadeType.REMOVE})

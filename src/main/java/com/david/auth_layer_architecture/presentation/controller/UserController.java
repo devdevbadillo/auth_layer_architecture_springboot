@@ -117,7 +117,6 @@ public class UserController {
             HttpServletRequest request
     ) {
         String accessTokenId =(String) request.getAttribute("accessTokenId");
-        System.out.println(accessTokenId);
         return ResponseEntity.ok(this.userFacade.signOut(accessTokenId));
     }
 }

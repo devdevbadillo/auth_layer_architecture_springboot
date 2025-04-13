@@ -13,7 +13,7 @@ public class EmailServiceImpl implements IEmailService {
 
     private final JavaMailSender mailSender;
 
-     EmailServiceImpl(JavaMailSender mailSender) {
+    EmailServiceImpl(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
 

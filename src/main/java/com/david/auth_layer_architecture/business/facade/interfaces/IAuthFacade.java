@@ -12,5 +12,5 @@ import java.io.IOException;
 public interface IAuthFacade {
     SignInResponse signIn(SignInRequest signInRequest) throws BadCredentialsException, HaveAccessWithOAuth2Exception;
 
-    SignInResponse refreshToken(String refreshToken) throws UserNotFoundException;
+    SignInResponse refreshToken(String refreshToken);
 }

@@ -6,11 +6,14 @@ import com.david.auth_layer_architecture.common.exceptions.credential.UserAlread
 import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
 import com.david.auth_layer_architecture.domain.dto.request.ChangePasswordRequest;
 import com.david.auth_layer_architecture.domain.dto.response.MessageResponse;
+import com.david.auth_layer_architecture.domain.dto.response.SignInResponse;
 import com.david.auth_layer_architecture.domain.entity.Credential;
 import jakarta.mail.MessagingException;
 
 public interface ICredentialService {
-    MessageResponse signUp(Credential credential) throws UserAlreadyExistException;
+    MessageResponse signUp(Credential credential, Boolean isAccessWithOAuth2) throws UserAlreadyExistException, MessagingException;
+
+    SignInResponse verifyAccount(String accessTokenId);
 
     MessageResponse recoveryAccount(
             String email

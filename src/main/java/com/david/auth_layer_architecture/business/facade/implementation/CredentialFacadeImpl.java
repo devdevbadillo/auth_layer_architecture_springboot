@@ -6,6 +6,7 @@ import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFou
 import com.david.auth_layer_architecture.common.mapper.CredentialEntityMapper;
 import com.david.auth_layer_architecture.domain.dto.request.ChangePasswordRequest;
 import com.david.auth_layer_architecture.domain.dto.request.RecoveryAccountRequest;
+import com.david.auth_layer_architecture.domain.dto.response.SignInResponse;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,9 +27,14 @@ public class CredentialFacadeImpl implements ICredentialFacade{
     private final CredentialEntityMapper credentialEntityMapper;
 
     @Override
-    public MessageResponse signUp(SignUpRequest signUpRequest) throws UserAlreadyExistException {
+    public MessageResponse signUp(SignUpRequest signUpRequest) throws UserAlreadyExistException, MessagingException {
         Credential credential = this.credentialEntityMapper.toCredentialEntity(signUpRequest);
-        return credentialService.signUp(credential);
+        return credentialService.signUp(credential, false);
+    }
+
+    @Override
+    public SignInResponse verifyAccount(String accessTokenId) {
+        return this.credentialService.verifyAccount(accessTokenId);
     }
 
     @Override

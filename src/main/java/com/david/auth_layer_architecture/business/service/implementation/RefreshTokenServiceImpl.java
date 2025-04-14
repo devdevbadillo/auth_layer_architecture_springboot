@@ -19,8 +19,8 @@ public class RefreshTokenServiceImpl implements IRefreshTokenService {
 
 
     @Override
-    public void saveRefreshTokenToAccessApp(String refreshToken, Credential credential, AccessToken accessToken) {
-        RefreshToken refreshTokenEntity = this.refreshTokenEntityMapper.toRefreshTokenEntity(refreshToken, credential, CommonConstants.TYPE_REFRESH_TOKEN, accessToken);
+    public void saveRefreshTokenToAccessApp(String refreshToken, Credential credential, AccessToken accessToken, String typeToken) {
+        RefreshToken refreshTokenEntity = this.refreshTokenEntityMapper.toRefreshTokenEntity(refreshToken, credential, typeToken, accessToken);
         this.refreshTokenRepository.save(refreshTokenEntity);
     }
 

@@ -19,6 +19,7 @@ public class CredentialEntityMapper {
                 .password(encodePassword(signUpRequest.getPassword()))
                 .name(signUpRequest.getName())
                 .isAccesOauth(false)
+                .isVerified(false)
                 .build();
     }
 

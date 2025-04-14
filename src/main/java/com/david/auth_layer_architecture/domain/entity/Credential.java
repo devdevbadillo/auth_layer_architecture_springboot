@@ -29,6 +29,9 @@ public class Credential {
     @Column(nullable = false, name = "is_access_oauth")
     private Boolean isAccesOauth;
 
+    @Column(nullable = false, name = "is_verified")
+    private Boolean isVerified;
+
     @OneToMany(targetEntity = AccessToken.class, cascade = CascadeType.ALL,  fetch = FetchType.LAZY)
     @JoinColumn(name = "credential_id")
     private List<AccessToken> accessTokens;

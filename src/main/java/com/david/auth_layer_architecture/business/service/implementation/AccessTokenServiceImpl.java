@@ -10,7 +10,6 @@ import com.david.auth_layer_architecture.domain.entity.AccessToken;
 import com.david.auth_layer_architecture.domain.entity.Credential;
 import com.david.auth_layer_architecture.domain.entity.TypeToken;
 import com.david.auth_layer_architecture.persistence.AccessTokenRepository;
-import com.david.auth_layer_architecture.persistence.TypeTokenRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -57,10 +56,16 @@ public class AccessTokenServiceImpl implements IAccessTokenService {
     }
 
     @Override
-    public AccessToken saveAccessTokenToAccessAppWithRefreshToken(AccessToken oldAccessToken, String accessToken) {
+    public void saveAccessTokenToAccessAppWithRefreshToken(AccessToken oldAccessToken, String accessToken) {
         AccessToken newAccessToken = accessTokenEntityMapper.toTokenEntity(accessToken, oldAccessToken.getCredential(), CommonConstants.TYPE_ACCESS_TOKEN);
         this.setOldAccessTokenToChangePassword(oldAccessToken, newAccessToken);
-        return accessTokenRepository.save(oldAccessToken);
+        accessTokenRepository.save(oldAccessToken);
+    }
+
+    @Override
+    public AccessToken saveAccessTokenToVerifyAccount(String accessToken, Credential credential) {
+        AccessToken newAccessToken = accessTokenEntityMapper.toTokenEntity(accessToken, credential, CommonConstants.TYPE_VERIFY_ACCOUNT);
+        return accessTokenRepository.save(newAccessToken);
     }
 
     @Override

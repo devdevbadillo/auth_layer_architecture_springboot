@@ -12,7 +12,9 @@ public interface IAccessTokenService {
 
     AccessToken saveAccessTokenToAccessApp(String accessToken, Credential credential);
 
-    AccessToken saveAccessTokenToAccessAppWithRefreshToken(AccessToken oldAccessToken, String accessToken);
+    void saveAccessTokenToAccessAppWithRefreshToken(AccessToken oldAccessToken, String accessToken);
+
+    AccessToken saveAccessTokenToVerifyAccount(String accessToken, Credential credential);
 
     AccessToken getTokenByAccessTokenId(String accessTokenId);
 

@@ -1,5 +1,0 @@
-package com.david.auth_layer_architecture.business.service.interfaces;
-
-public interface IEmailService {
-    void sendEmailRecoveryAccount(String email, String token);
-}

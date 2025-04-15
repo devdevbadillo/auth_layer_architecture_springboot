@@ -4,9 +4,8 @@ import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.routes.AuthRoutes;
 import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
 import com.david.auth_layer_architecture.persistence.AccessTokenRepository;
-import com.david.auth_layer_architecture.presentation.security.filters.JwtChangePasswordFilter;
-import com.david.auth_layer_architecture.presentation.security.filters.OAuth2ErrorFilter;
-import com.david.auth_layer_architecture.presentation.security.filters.OAuth2SuccessFilter;
+import com.david.auth_layer_architecture.persistence.RefreshTokenRepository;
+import com.david.auth_layer_architecture.presentation.security.filters.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +20,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import com.david.auth_layer_architecture.common.utils.JwtUtil;
-import com.david.auth_layer_architecture.presentation.security.filters.JwtAccessAppFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -38,14 +36,21 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final OAuth2SuccessFilter oAuth2SuccessFilter;
     private final AccessTokenRepository accessTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${uri.frontend}")
     private String frontendUri;
 
-    public SecurityConfig(JwtUtil jwtUtil, OAuth2SuccessFilter oAuth2SuccessFilter, AccessTokenRepository accessTokenRepository) {
+    public SecurityConfig(
+            JwtUtil jwtUtil,
+            OAuth2SuccessFilter oAuth2SuccessFilter,
+            AccessTokenRepository accessTokenRepository,
+            RefreshTokenRepository refreshTokenRepository
+    ) {
         this.jwtUtil = jwtUtil;
         this.oAuth2SuccessFilter = oAuth2SuccessFilter;
         this.accessTokenRepository = accessTokenRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     @Bean
@@ -80,7 +85,9 @@ public class SecurityConfig {
                 )
             .addFilterBefore(new JwtAccessAppFilter(jwtUtil, accessTokenRepository), BasicAuthenticationFilter.class)
             .addFilterBefore(new OAuth2ErrorFilter(jwtUtil), JwtAccessAppFilter.class)
-            .addFilterBefore(new JwtChangePasswordFilter(jwtUtil, accessTokenRepository), JwtAccessAppFilter.class);
+            .addFilterBefore(new JwtChangePasswordFilter(jwtUtil, accessTokenRepository), JwtAccessAppFilter.class)
+            .addFilterBefore(new JwtVerifyAccountFilter(jwtUtil, accessTokenRepository), JwtAccessAppFilter.class)
+            .addFilterBefore(new JwtRefreshAccessToVerifyAccount(jwtUtil, refreshTokenRepository), JwtAccessAppFilter.class);
 
         return httpSecurity.build();
     }

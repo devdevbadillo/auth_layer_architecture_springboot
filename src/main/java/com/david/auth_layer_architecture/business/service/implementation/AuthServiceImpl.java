@@ -53,7 +53,7 @@ public class AuthServiceImpl implements IAuthService{
             String refreshToken = jwtUtil.generateToken(credential.getEmail(), expirationRefreshToken, CommonConstants.TYPE_REFRESH_TOKEN );
 
             AccessToken accessTokenEntity = this.accessTokenService.saveAccessTokenToAccessApp(accessToken, credential);
-            this.refreshTokenService.saveRefreshTokenToAccessApp(refreshToken, credential, accessTokenEntity, CommonConstants.TYPE_REFRESH_TOKEN);
+            this.refreshTokenService.saveRefreshToken(refreshToken, credential, accessTokenEntity, CommonConstants.TYPE_REFRESH_TOKEN);
             return new SignInResponse(accessToken, refreshToken);
         }catch (UserNotFoundException e) {
             throw new BadCredentialsException(e.getMessage());

@@ -15,6 +15,11 @@ public interface ICredentialService {
 
     SignInResponse verifyAccount(String accessTokenId);
 
+    MessageResponse refreshAccessToVerifyAccount(
+            String refreshToken,
+            String email
+    ) throws UserNotFoundException, AlreadyHaveAccessTokenToChangePasswordException, MessagingException;
+
     MessageResponse recoveryAccount(
             String email
     ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException;

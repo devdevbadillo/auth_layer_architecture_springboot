@@ -6,15 +6,13 @@ import com.david.auth_layer_architecture.domain.entity.Credential;
 
 public interface IAccessTokenService {
 
-    void hasAccessTokenToChangePassword(Credential credential) throws AlreadyHaveAccessTokenToChangePasswordException;
+    void hasAccessToken(Credential credential, String typeToken) throws AlreadyHaveAccessTokenToChangePasswordException;
 
-    void saveAccessTokenToChangePassword(String accessToken, Credential credential);
+    AccessToken saveAccessToken(String accessToken, Credential credential, String typeToken);
 
     AccessToken saveAccessTokenToAccessApp(String accessToken, Credential credential);
 
     void saveAccessTokenToAccessAppWithRefreshToken(AccessToken oldAccessToken, String accessToken);
-
-    AccessToken saveAccessTokenToVerifyAccount(String accessToken, Credential credential);
 
     AccessToken getTokenByAccessTokenId(String accessTokenId);
 

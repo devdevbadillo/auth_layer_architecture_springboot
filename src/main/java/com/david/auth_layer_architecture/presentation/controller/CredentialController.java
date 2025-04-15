@@ -136,7 +136,94 @@ public class CredentialController {
             HttpServletRequest request
     ){
         String accessTokenId = (String) request.getAttribute("accessTokenId");
+
         return ResponseEntity.ok(credentialFacade.verifyAccount(accessTokenId));
+    }
+
+    @Operation(
+            summary = "Refresh access to verify account",
+            description = "Refresh access to verify account with refresh token in header Authorization Bearer token"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Operation success",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"message\": \"Instructions to verify account sent successfully, check your email\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"message\": \"Access denied\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"message\": \"Internal server error\"}"
+                            )
+                    )
+            )
+    })
+    @PatchMapping(CredentialRoutes.REFRESH_ACCESS_TO_VERIFY_ACCOUNT_URL)
+    public ResponseEntity<MessageResponse> refreshAccessToRecoveryAccount(
+            HttpServletRequest request
+    ) throws UserNotFoundException, MessagingException, AlreadyHaveAccessTokenToChangePasswordException {
+        String refreshToken = (String) request.getAttribute("refreshToken");
+        String email = (String) request.getAttribute("email");
+
+        return ResponseEntity.ok(credentialFacade.refreshAccessToVerifyAccount(refreshToken, email));
+    }
+
+    @Operation(
+            summary = "View refresh access to verify account",
+            description = "Endpoint for authorized users with access token in header Authorization Bearer token to refresh access to verify account"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Operation success",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"message\": \"Ok\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Bad request",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"message\": \"Access denied\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"message\": \"Internal server error\"}"
+                            )
+            ))
+    })
+    @GetMapping(CredentialRoutes.REFRESH_ACCESS_TO_VERIFY_ACCOUNT_URL)
+    public ResponseEntity <MessageResponse> viewRefreshAccessToRecoveryAccount() {
+        return ResponseEntity.ok(new MessageResponse("Ok"));
     }
 
     @Operation(

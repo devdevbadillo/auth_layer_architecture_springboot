@@ -14,7 +14,7 @@ public class CommonConstants {
     public static final Integer EXPIRATION_TOKEN_TO_VERIFY_ACCOUNT = 60;
     public static final Integer EXPIRATION_TOKEN_TO_CHANGE_PASSWORD = 10;
     public static final Integer EXPIRATION_REFRESH_TOKEN_TO_ACCESS_APP = 7;
-    public static final Integer EXPIRATION_REFRESH_TOKEN_TO_VERIFY_ACCOUNT = 30;
+    public static final Integer EXPIRATION_REFRESH_TOKEN_TO_VERIFY_ACCOUNT = 10;
     public static final Integer EXPIRATION_ERROR_TOKEN = 10;
 
     // Type token

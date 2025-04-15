@@ -7,7 +7,9 @@ import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
 import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
 import com.david.auth_layer_architecture.domain.entity.AccessToken;
+import com.david.auth_layer_architecture.domain.entity.RefreshToken;
 import com.david.auth_layer_architecture.persistence.AccessTokenRepository;
+import com.david.auth_layer_architecture.persistence.RefreshTokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,13 +22,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Date;
 
 @Component
 @AllArgsConstructor
-public class JwtVerifyAccountFilter extends OncePerRequestFilter {
-
+public class JwtRefreshAccessToVerifyAccount extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
-    private final AccessTokenRepository accessTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
 
     @Override
@@ -39,20 +41,23 @@ public class JwtVerifyAccountFilter extends OncePerRequestFilter {
         String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION);
         String path = request.getRequestURI();
 
-        if (jwtToken != null && jwtToken.startsWith("Bearer ") && path.contains(CredentialRoutes.VERIFY_ACCOUNT_URL)) {
+        if (jwtToken != null && jwtToken.startsWith("Bearer ") && path.contains(CredentialRoutes.REFRESH_ACCESS_TO_VERIFY_ACCOUNT_URL)) {
             jwtToken = jwtToken.replace("Bearer ", "");
 
             try {
                 DecodedJWT decodedJWT = jwtUtil.validateToken(jwtToken);
-                jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_VERIFY_ACCOUNT);
+                jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_REFRESH_TOKEN_TO_VERIFY_ACCOUNT);
 
-                String accessTokenId = jwtUtil.getSpecificClaim(decodedJWT, "jti").asString();
+                String refreshTokenId = jwtUtil.getSpecificClaim(decodedJWT, "jti").asString();
+                RefreshToken refreshToken = this.refreshTokenRepository.findRefreshTokenByRefreshTokenId(refreshTokenId);
 
-                AccessToken accessToken = this.accessTokenRepository.getTokenByAccessTokenId(accessTokenId);
+                if (refreshToken == null) throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);
+                if(refreshToken.getAccessToken().getExpirationDate().compareTo(new Date()) > 0)  throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);
 
-                if (accessToken == null) throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);
+                String email = jwtUtil.extractUser(decodedJWT);
 
-                request.setAttribute("accessTokenId", accessTokenId);
+                request.setAttribute("email", email);
+                request.setAttribute("refreshToken", jwtToken);
             } catch (JWTVerificationException ex) {
                 handleInvalidToken(response, ex.getMessage());
                 return;

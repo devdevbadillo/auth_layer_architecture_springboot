@@ -49,8 +49,8 @@ public class CredentialServiceImpl implements ICredentialService{
 
             this.emailService.sendEmailVerifyAccount(credential.getEmail(), accessToken, refreshToken);
 
-            AccessToken accessTokenEntity = this.accessTokenService.saveAccessTokenToVerifyAccount(accessToken, credential);
-            this.refreshTokenService.saveRefreshTokenToAccessApp(refreshToken, credential, accessTokenEntity, CommonConstants.TYPE_REFRESH_TOKEN_TO_VERIFY_ACCOUNT);
+            AccessToken accessTokenEntity = this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_VERIFY_ACCOUNT);
+            this.refreshTokenService.saveRefreshToken(refreshToken, credential, accessTokenEntity, CommonConstants.TYPE_REFRESH_TOKEN_TO_VERIFY_ACCOUNT);
         }
 
         return new MessageResponse(CredentialMessages.USER_CREATED_SUCCESSFULLY);
@@ -58,10 +58,8 @@ public class CredentialServiceImpl implements ICredentialService{
 
     @Override
     public SignInResponse verifyAccount(String accessTokenId) {
-        System.out.println(accessTokenId);
         AccessToken accessTokenToVerifyAccount = this.accessTokenService.getTokenByAccessTokenId(accessTokenId);
         Credential credential = accessTokenToVerifyAccount.getCredential();
-
         credential.setIsVerified(true);
         this.credentialRepostory.save(credential);
 
@@ -74,8 +72,25 @@ public class CredentialServiceImpl implements ICredentialService{
         String refreshToken = jwtUtil.generateToken(credential.getEmail(), expirationRefreshToken, CommonConstants.TYPE_REFRESH_TOKEN );
 
         AccessToken accessTokenToApp = this.accessTokenService.saveAccessTokenToAccessApp(accessToken, credential);
-        this.refreshTokenService.saveRefreshTokenToAccessApp(refreshToken, credential, accessTokenToApp, CommonConstants.TYPE_REFRESH_TOKEN);
+        this.refreshTokenService.saveRefreshToken(refreshToken, credential, accessTokenToApp, CommonConstants.TYPE_REFRESH_TOKEN);
         return new SignInResponse(accessToken, refreshToken);
+    }
+
+    @Override
+    public MessageResponse refreshAccessToVerifyAccount(
+            String refreshToken,
+            String email
+    ) throws UserNotFoundException, AlreadyHaveAccessTokenToChangePasswordException, MessagingException {
+        Credential credential = this.isRegisteredUser(email);
+        this.accessTokenService.hasAccessToken(credential, CommonConstants.TYPE_VERIFY_ACCOUNT);
+
+        Date expirationAccessToken = jwtUtil.calculateExpirationMinutesToken(CommonConstants.EXPIRATION_TOKEN_TO_VERIFY_ACCOUNT);
+        String accessToken = jwtUtil.generateToken(email, expirationAccessToken, CommonConstants.TYPE_VERIFY_ACCOUNT );
+
+        this.emailService.sendEmailVerifyAccount(credential.getEmail(), accessToken, refreshToken);
+        this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_VERIFY_ACCOUNT);
+
+        return new MessageResponse(CredentialMessages.SEND_EMAIL_VERIFY_ACCOUNT_SUCCESSFULLY);
     }
 
     @Override
@@ -84,14 +99,14 @@ public class CredentialServiceImpl implements ICredentialService{
     ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException {
         Credential credential = this.isRegisteredUser(email);
         this.hasAccessWithOAuth2(credential);
-        this.accessTokenService.hasAccessTokenToChangePassword(credential);
+        this.accessTokenService.hasAccessToken(credential, CommonConstants.TYPE_CHANGE_PASSWORD);
 
         Date expirationAccessToken = jwtUtil.calculateExpirationMinutesToken(CommonConstants.EXPIRATION_TOKEN_TO_CHANGE_PASSWORD);
         String accessToken = jwtUtil.generateToken(email, expirationAccessToken, CommonConstants.TYPE_CHANGE_PASSWORD );
 
         emailService.sendEmailRecoveryAccount(email, accessToken);
 
-        this.accessTokenService.saveAccessTokenToChangePassword(accessToken, credential);
+        this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_CHANGE_PASSWORD);
 
         return new MessageResponse(CredentialMessages.RECOVERY_ACCOUNT_INSTRUCTIONS_SENT);
     }

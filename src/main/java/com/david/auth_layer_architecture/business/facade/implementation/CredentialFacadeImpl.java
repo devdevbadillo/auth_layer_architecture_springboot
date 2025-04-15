@@ -38,6 +38,11 @@ public class CredentialFacadeImpl implements ICredentialFacade{
     }
 
     @Override
+    public MessageResponse refreshAccessToVerifyAccount(String refreshToken, String email) throws UserNotFoundException, AlreadyHaveAccessTokenToChangePasswordException, MessagingException {
+        return this.credentialService.refreshAccessToVerifyAccount(refreshToken, email);
+    }
+
+    @Override
     public MessageResponse recoveryAccount(
             RecoveryAccountRequest recoveryAccountRequest
     ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException {

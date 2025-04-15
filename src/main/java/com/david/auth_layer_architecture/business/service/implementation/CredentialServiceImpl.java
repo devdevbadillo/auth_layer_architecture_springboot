@@ -5,6 +5,7 @@ import com.david.auth_layer_architecture.business.service.interfaces.IEmailServi
 import com.david.auth_layer_architecture.business.service.interfaces.IRefreshTokenService;
 import com.david.auth_layer_architecture.common.exceptions.accessToken.AlreadyHaveAccessTokenToChangePasswordException;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
+import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
 import com.david.auth_layer_architecture.common.utils.JwtUtil;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
@@ -91,8 +92,9 @@ public class CredentialServiceImpl implements ICredentialService{
     @Override
     public MessageResponse recoveryAccount(
             String email
-    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException {
+    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException, UserNotVerifiedException {
         Credential credential = this.isRegisteredUser(email);
+        if(!credential.getIsVerified()) throw new UserNotVerifiedException(AuthMessages.USER_NOT_VERIFIED_ERROR);
         this.hasAccessWithOAuth2(credential);
         this.accessTokenService.hasAccessToken(credential, CommonConstants.TYPE_CHANGE_PASSWORD);
 
@@ -134,6 +136,5 @@ public class CredentialServiceImpl implements ICredentialService{
     private void isUniqueUser(String email) throws UserAlreadyExistException{
         if (credentialRepository.getCredentialByEmail(email) != null) throw new UserAlreadyExistException(CredentialMessages.USER_ALREADY_EXISTS);
     }
-
 
 }

@@ -2,6 +2,7 @@ package com.david.auth_layer_architecture.business.facade.interfaces;
 
 import com.david.auth_layer_architecture.common.exceptions.accessToken.AlreadyHaveAccessTokenToChangePasswordException;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
+import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserAlreadyExistException;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
 import com.david.auth_layer_architecture.domain.dto.request.ChangePasswordRequest;
@@ -23,7 +24,7 @@ public interface ICredentialFacade {
 
    MessageResponse recoveryAccount(
            RecoveryAccountRequest recoveryAccountRequest
-   ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException;
+   ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException, UserNotVerifiedException;
 
    MessageResponse changePassword(
            ChangePasswordRequest changePasswordRequest, String email, String accessTokenId

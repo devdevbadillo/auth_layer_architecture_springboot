@@ -2,6 +2,7 @@ package com.david.auth_layer_architecture.presentation.controller;
 
 import com.david.auth_layer_architecture.common.exceptions.accessToken.AlreadyHaveAccessTokenToChangePasswordException;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
+import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
@@ -235,7 +236,7 @@ public class CredentialController {
     @PostMapping(CredentialRoutes.RECOVERY_ACCOUNT_URL)
     public ResponseEntity<MessageResponse> recoveryAccount(
             @RequestBody @Valid RecoveryAccountRequest recoveryAccountRequest
-    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException {
+    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException, UserNotVerifiedException {
         return ResponseEntity.ok(credentialFacade.recoveryAccount(recoveryAccountRequest));
     }
 

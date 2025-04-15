@@ -52,7 +52,7 @@ public class JwtVerifyAccountFilter extends OncePerRequestFilter {
                 AccessToken accessToken = this.accessTokenRepository.getTokenByAccessTokenId(accessTokenId);
 
                 if (accessToken == null) throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);
-                if(accessToken.getExpirationDate().compareTo(new Date()) > 0)  throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);
+                if( accessToken.getExpirationDate().compareTo(new Date()) < 0)  throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);
 
                 request.setAttribute("accessTokenId", accessTokenId);
             } catch (JWTVerificationException ex) {

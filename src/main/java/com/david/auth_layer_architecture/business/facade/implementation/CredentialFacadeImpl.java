@@ -2,6 +2,7 @@ package com.david.auth_layer_architecture.business.facade.implementation;
 
 import com.david.auth_layer_architecture.common.exceptions.accessToken.AlreadyHaveAccessTokenToChangePasswordException;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
+import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
 import com.david.auth_layer_architecture.common.mapper.CredentialEntityMapper;
 import com.david.auth_layer_architecture.domain.dto.request.ChangePasswordRequest;
@@ -45,7 +46,7 @@ public class CredentialFacadeImpl implements ICredentialFacade{
     @Override
     public MessageResponse recoveryAccount(
             RecoveryAccountRequest recoveryAccountRequest
-    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException {
+    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException, UserNotVerifiedException {
         return this.credentialService.recoveryAccount(recoveryAccountRequest.getEmail());
     }
 

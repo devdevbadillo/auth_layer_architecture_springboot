@@ -62,8 +62,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(http -> {
                 http.requestMatchers(
                         HttpMethod.POST,
-                       CommonConstants.PUBLIC_URL + AuthRoutes.SIGNIN_URL,
-                       CommonConstants.PUBLIC_URL + CredentialRoutes.SIGNUP_URL,
+                       CommonConstants.PUBLIC_URL + AuthRoutes.SIGN_IN_URL,
+                       CommonConstants.PUBLIC_URL + CredentialRoutes.SIGN_UP_URL,
                        CommonConstants.PUBLIC_URL + AuthRoutes.REFRESH_TOKEN_URL
                     )
                     .permitAll();

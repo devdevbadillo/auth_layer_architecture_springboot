@@ -1,12 +1,16 @@
 package com.david.auth_layer_architecture.common.utils;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
+import com.david.auth_layer_architecture.domain.entity.Credential;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.auth0.jwt.JWT;
@@ -98,4 +102,19 @@ public class JwtUtil {
         }
     }
 
+    public void handleInvalidToken(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpStatus.FORBIDDEN.value());
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\": \"" + message + "\"}");
+    }
+
+    public String generateAccessToken(Credential credential, Integer expiration, String type) {
+        Date expirationToken = calculateExpirationMinutesToken(expiration);
+        return generateToken(credential.getEmail(), expirationToken, type);
+    }
+
+    public String generateRefreshToken(Credential credential, Integer expiration, String type) {
+        Date expirationToken  = calculateExpirationDaysToken(expiration);
+        return generateToken(credential.getEmail(), expirationToken, type);
+    }
 }

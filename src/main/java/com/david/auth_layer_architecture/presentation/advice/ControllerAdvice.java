@@ -5,6 +5,7 @@ import java.util.Map;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.david.auth_layer_architecture.common.exceptions.accessToken.AlreadyHaveAccessTokenToChangePasswordException;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
+import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
 import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -81,6 +82,11 @@ public class ControllerAdvice {
 
     @ExceptionHandler( AlreadyHaveAccessTokenToChangePasswordException.class )
     private ResponseEntity<Map<String, String>> handleAlreadyHaveAccessTokenToChangePasswordException(AlreadyHaveAccessTokenToChangePasswordException ex){
+        return new ResponseEntity<>(Map.of(KEY_MESSAGE, ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler( UserNotVerifiedException.class)
+    private ResponseEntity<Map<String, String>> handleUserNotVerifiedException(UserNotVerifiedException ex){
         return new ResponseEntity<>(Map.of(KEY_MESSAGE, ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 }

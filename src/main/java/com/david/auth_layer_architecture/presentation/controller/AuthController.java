@@ -1,6 +1,8 @@
 package com.david.auth_layer_architecture.presentation.controller;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
+import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.routes.AuthRoutes;
 import com.david.auth_layer_architecture.domain.dto.response.MessageResponse;
@@ -21,7 +23,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.david.auth_layer_architecture.business.facade.interfaces.IAuthFacade;
-import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
 import com.david.auth_layer_architecture.domain.dto.request.SignInRequest;
 
 import jakarta.validation.Valid;
@@ -85,10 +86,10 @@ public class AuthController {
             )
 
     })
-    @PostMapping(AuthRoutes.SIGNIN_URL)
+    @PostMapping(AuthRoutes.SIGN_IN_URL)
     public ResponseEntity<SignInResponse> signIn(
             @RequestBody @Valid SignInRequest signInRequest
-    ) throws BadCredentialsException, HaveAccessWithOAuth2Exception {
+    ) throws BadCredentialsException, HaveAccessWithOAuth2Exception, UserNotVerifiedException {
         return ResponseEntity.ok(authFacade.signIn(signInRequest));
     }
 
@@ -142,7 +143,7 @@ public class AuthController {
     @PostMapping(AuthRoutes.REFRESH_TOKEN_URL)
     public ResponseEntity<SignInResponse> refreshToken(
             @RequestHeader @NotBlank @NotNull String refreshToken
-    ){
+    ) throws JWTVerificationException {
         return ResponseEntity.ok(authFacade.refreshToken(refreshToken));
     }
 

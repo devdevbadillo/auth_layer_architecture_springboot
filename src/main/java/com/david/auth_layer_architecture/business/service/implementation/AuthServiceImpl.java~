@@ -6,10 +6,8 @@ import com.david.auth_layer_architecture.business.service.interfaces.IAccessToke
 import com.david.auth_layer_architecture.business.service.interfaces.ICredentialService;
 import com.david.auth_layer_architecture.business.service.interfaces.IRefreshTokenService;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
-import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
-import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
 import com.david.auth_layer_architecture.domain.dto.response.SignInResponse;
 import com.david.auth_layer_architecture.domain.entity.AccessToken;
 import com.david.auth_layer_architecture.domain.entity.Credential;
@@ -41,12 +39,10 @@ public class AuthServiceImpl implements IAuthService{
     private final IRefreshTokenService refreshTokenService;
 
     @Override
-    public SignInResponse signIn(SignInRequest signInRequest) throws BadCredentialsException, HaveAccessWithOAuth2Exception, UserNotVerifiedException {
+    public SignInResponse signIn(SignInRequest signInRequest) throws BadCredentialsException, HaveAccessWithOAuth2Exception {
         try{
             Credential credential = this.credentialService.isRegisteredUser(signInRequest.getEmail());
             this.credentialService.hasAccessWithOAuth2(credential);
-
-            if(!credential.getIsVerified()) throw new UserNotVerifiedException(AuthMessages.USER_NOT_VERIFIED_ERROR);
 
             Authentication authentication = this.authenticate(credential, signInRequest.getPassword());
             SecurityContextHolder.getContext().setAuthentication(authentication);

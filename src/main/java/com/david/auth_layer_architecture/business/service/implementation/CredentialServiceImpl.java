@@ -20,7 +20,7 @@ import com.david.auth_layer_architecture.common.exceptions.credential.UserAlread
 import com.david.auth_layer_architecture.common.utils.constants.messages.CredentialMessages;
 import com.david.auth_layer_architecture.domain.dto.response.MessageResponse;
 import com.david.auth_layer_architecture.domain.entity.Credential;
-import com.david.auth_layer_architecture.persistence.CredentialRepostory;
+import com.david.auth_layer_architecture.persistence.CredentialRepository;
 
 import java.util.Date;
 
@@ -28,7 +28,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class CredentialServiceImpl implements ICredentialService{
 
-    private final CredentialRepostory credentialRepostory;
+    private final CredentialRepository credentialRepository;
     private final IEmailService emailService;
     private final IAccessTokenService accessTokenService;
     private final IRefreshTokenService refreshTokenService;
@@ -38,19 +38,16 @@ public class CredentialServiceImpl implements ICredentialService{
     public MessageResponse signUp(Credential credential,  Boolean isAccessWithOAuth2) throws UserAlreadyExistException, MessagingException {
         this.isUniqueUser(credential.getEmail());
 
-        credentialRepostory.save(credential);
+        credentialRepository.save(credential);
 
         if(!isAccessWithOAuth2) {
-            Date expirationAccessToken = jwtUtil.calculateExpirationMinutesToken(CommonConstants.EXPIRATION_TOKEN_TO_VERIFY_ACCOUNT);
-            String accessToken = jwtUtil.generateToken(credential.getEmail(), expirationAccessToken, CommonConstants.TYPE_VERIFY_ACCOUNT );
-
-            Date expirationRefreshToken = jwtUtil.calculateExpirationDaysToken(CommonConstants.EXPIRATION_REFRESH_TOKEN_TO_VERIFY_ACCOUNT);
-            String refreshToken = jwtUtil.generateToken(credential.getEmail(), expirationRefreshToken, CommonConstants.TYPE_REFRESH_TOKEN_TO_VERIFY_ACCOUNT );
-
-            this.emailService.sendEmailVerifyAccount(credential.getEmail(), accessToken, refreshToken);
+            String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_VERIFY_ACCOUNT, CommonConstants.TYPE_VERIFY_ACCOUNT );
+            String refreshToken = jwtUtil.generateRefreshToken(credential, CommonConstants.EXPIRATION_REFRESH_TOKEN_TO_VERIFY_ACCOUNT, CommonConstants.TYPE_REFRESH_TOKEN_TO_VERIFY_ACCOUNT );
 
             AccessToken accessTokenEntity = this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_VERIFY_ACCOUNT);
             this.refreshTokenService.saveRefreshToken(refreshToken, credential, accessTokenEntity, CommonConstants.TYPE_REFRESH_TOKEN_TO_VERIFY_ACCOUNT);
+
+            this.emailService.sendEmailVerifyAccount(credential.getEmail(), accessToken, refreshToken);
         }
 
         return new MessageResponse(CredentialMessages.USER_CREATED_SUCCESSFULLY);
@@ -59,20 +56,18 @@ public class CredentialServiceImpl implements ICredentialService{
     @Override
     public SignInResponse verifyAccount(String accessTokenId) {
         AccessToken accessTokenToVerifyAccount = this.accessTokenService.getTokenByAccessTokenId(accessTokenId);
+
         Credential credential = accessTokenToVerifyAccount.getCredential();
         credential.setIsVerified(true);
-        this.credentialRepostory.save(credential);
+        this.credentialRepository.save(credential);
 
         this.refreshTokenService.deleteRefreshToken(accessTokenToVerifyAccount);
 
-        Date expirationAccessToken = jwtUtil.calculateExpirationMinutesToken(CommonConstants.EXPIRATION_TOKEN_TO_ACCESS_APP);
-        String accessToken = jwtUtil.generateToken(credential.getEmail(), expirationAccessToken, CommonConstants.TYPE_ACCESS_TOKEN );
+        String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_ACCESS_TOKEN );
+        String refreshToken = jwtUtil.generateRefreshToken(credential, CommonConstants.EXPIRATION_REFRESH_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_REFRESH_TOKEN );
 
-        Date expirationRefreshToken = jwtUtil.calculateExpirationMinutesToken(CommonConstants.EXPIRATION_REFRESH_TOKEN_TO_ACCESS_APP);
-        String refreshToken = jwtUtil.generateToken(credential.getEmail(), expirationRefreshToken, CommonConstants.TYPE_REFRESH_TOKEN );
-
-        AccessToken accessTokenToApp = this.accessTokenService.saveAccessTokenToAccessApp(accessToken, credential);
-        this.refreshTokenService.saveRefreshToken(refreshToken, credential, accessTokenToApp, CommonConstants.TYPE_REFRESH_TOKEN);
+        AccessToken accessTokenEntity = accessTokenService.saveAccessTokenToAccessApp(accessToken, credential);
+        refreshTokenService.saveRefreshToken(refreshToken, credential, accessTokenEntity, CommonConstants.TYPE_REFRESH_TOKEN);
         return new SignInResponse(accessToken, refreshToken);
     }
 
@@ -84,11 +79,11 @@ public class CredentialServiceImpl implements ICredentialService{
         Credential credential = this.isRegisteredUser(email);
         this.accessTokenService.hasAccessToken(credential, CommonConstants.TYPE_VERIFY_ACCOUNT);
 
-        Date expirationAccessToken = jwtUtil.calculateExpirationMinutesToken(CommonConstants.EXPIRATION_TOKEN_TO_VERIFY_ACCOUNT);
-        String accessToken = jwtUtil.generateToken(email, expirationAccessToken, CommonConstants.TYPE_VERIFY_ACCOUNT );
+        String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_VERIFY_ACCOUNT, CommonConstants.TYPE_VERIFY_ACCOUNT );
+
+        this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_VERIFY_ACCOUNT);
 
         this.emailService.sendEmailVerifyAccount(credential.getEmail(), accessToken, refreshToken);
-        this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_VERIFY_ACCOUNT);
 
         return new MessageResponse(CredentialMessages.SEND_EMAIL_VERIFY_ACCOUNT_SUCCESSFULLY);
     }
@@ -101,12 +96,10 @@ public class CredentialServiceImpl implements ICredentialService{
         this.hasAccessWithOAuth2(credential);
         this.accessTokenService.hasAccessToken(credential, CommonConstants.TYPE_CHANGE_PASSWORD);
 
-        Date expirationAccessToken = jwtUtil.calculateExpirationMinutesToken(CommonConstants.EXPIRATION_TOKEN_TO_CHANGE_PASSWORD);
-        String accessToken = jwtUtil.generateToken(email, expirationAccessToken, CommonConstants.TYPE_CHANGE_PASSWORD );
+        String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_CHANGE_PASSWORD, CommonConstants.TYPE_CHANGE_PASSWORD );
+        this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_CHANGE_PASSWORD);
 
         emailService.sendEmailRecoveryAccount(email, accessToken);
-
-        this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_CHANGE_PASSWORD);
 
         return new MessageResponse(CredentialMessages.RECOVERY_ACCOUNT_INSTRUCTIONS_SENT);
     }
@@ -117,7 +110,7 @@ public class CredentialServiceImpl implements ICredentialService{
         this.hasAccessWithOAuth2(credential);
 
         credential.setPassword(password);
-        credentialRepostory.save(credential);
+        credentialRepository.save(credential);
 
         accessTokenService.deleteAccessToken(accessTokenId);
         return new MessageResponse(CredentialMessages.CHANGE_PASSWORD_SUCCESSFULLY);
@@ -126,7 +119,7 @@ public class CredentialServiceImpl implements ICredentialService{
 
     @Override
     public Credential isRegisteredUser(String email) throws UserNotFoundException{
-        Credential credential = credentialRepostory.getCredentialByEmail(email);
+        Credential credential = credentialRepository.getCredentialByEmail(email);
         if (credential == null) throw new UserNotFoundException(CredentialMessages.USER_NOT_REGISTERED);
         return credential;
     }
@@ -139,7 +132,8 @@ public class CredentialServiceImpl implements ICredentialService{
     }
 
     private void isUniqueUser(String email) throws UserAlreadyExistException{
-        if (credentialRepostory.getCredentialByEmail(email) != null) throw new UserAlreadyExistException(CredentialMessages.USER_ALREADY_EXISTS);
+        if (credentialRepository.getCredentialByEmail(email) != null) throw new UserAlreadyExistException(CredentialMessages.USER_ALREADY_EXISTS);
     }
+
 
 }

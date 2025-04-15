@@ -59,7 +59,7 @@ public class JwtRefreshAccessToVerifyAccount extends OncePerRequestFilter {
                 request.setAttribute("email", email);
                 request.setAttribute("refreshToken", jwtToken);
             } catch (JWTVerificationException ex) {
-                handleInvalidToken(response, ex.getMessage());
+                this.jwtUtil.handleInvalidToken(response, ex.getMessage());
                 return;
             }
         }
@@ -67,9 +67,4 @@ public class JwtRefreshAccessToVerifyAccount extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private void handleInvalidToken(HttpServletResponse response, String message) throws IOException {
-        response.setStatus(HttpStatus.FORBIDDEN.value());
-        response.setContentType("application/json");
-        response.getWriter().write("{\"error\": \"" + message + "\"}");
-    }
 }

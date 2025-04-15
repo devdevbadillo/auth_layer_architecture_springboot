@@ -69,7 +69,7 @@ public class JwtAccessAppFilter extends OncePerRequestFilter {
                 request.setAttribute("accessTokenId", accessTokenId);
                 SecurityContextHolder.setContext(context);
             } catch (JWTVerificationException ex) {
-                handleInvalidToken(response, ex.getMessage());
+                this.jwtUtil.handleInvalidToken(response, ex.getMessage());
                 return;
             }
         }
@@ -77,9 +77,4 @@ public class JwtAccessAppFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private void handleInvalidToken(HttpServletResponse response, String message) throws IOException {
-        response.setStatus(HttpStatus.FORBIDDEN.value());
-        response.setContentType("application/json");
-        response.getWriter().write("{\"error\": \"" + message + "\"}");
-    }
 }

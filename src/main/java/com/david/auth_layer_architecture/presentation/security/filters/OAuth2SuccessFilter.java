@@ -9,7 +9,7 @@ import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
 import com.david.auth_layer_architecture.domain.entity.AccessToken;
 import com.david.auth_layer_architecture.domain.entity.Credential;
-import com.david.auth_layer_architecture.persistence.CredentialRepostory;
+import com.david.auth_layer_architecture.persistence.CredentialRepository;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,7 +30,7 @@ public class OAuth2SuccessFilter extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;
     private final ICredentialService credentialService;
-    private final CredentialRepostory credentialRepostory;
+    private final CredentialRepository credentialRepository;
     private final IRefreshTokenService refreshTokenService;
     private final IAccessTokenService accessTokenService;
 
@@ -79,7 +79,7 @@ public class OAuth2SuccessFilter extends SimpleUrlAuthenticationSuccessHandler {
     }
 
     private String handleExistingUser(String email, Date expirationAccessToken, Date expirationRefreshToken) {
-        Credential credential = credentialRepostory.getCredentialByEmail(email);
+        Credential credential = credentialRepository.getCredentialByEmail(email);
 
         return credential.getIsAccesOauth()
                 ? createSuccessRedirectUrl(email, expirationAccessToken, expirationRefreshToken)
@@ -87,7 +87,7 @@ public class OAuth2SuccessFilter extends SimpleUrlAuthenticationSuccessHandler {
     }
 
     private String createSuccessRedirectUrl(String email, Date expirationAccessToken, Date expirationRefreshToken) {
-        Credential credential = credentialRepostory.getCredentialByEmail(email);
+        Credential credential = credentialRepository.getCredentialByEmail(email);
         String accessToken = jwtUtil.generateToken(email, expirationAccessToken, CommonConstants.TYPE_ACCESS_TOKEN);
         String refreshToken = jwtUtil.generateToken(email, expirationRefreshToken, CommonConstants.TYPE_REFRESH_TOKEN);
 

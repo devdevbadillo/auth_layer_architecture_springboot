@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.david.auth_layer_architecture.domain.entity.Credential;
 
 @Repository
-public interface CredentialRepostory extends CrudRepository<Credential, Long>{
+public interface CredentialRepository extends CrudRepository<Credential, Long>{
     Credential getCredentialByEmail(String email);
 }

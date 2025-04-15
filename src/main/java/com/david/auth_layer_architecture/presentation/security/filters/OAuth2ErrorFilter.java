@@ -40,7 +40,7 @@ public class OAuth2ErrorFilter extends OncePerRequestFilter {
                 DecodedJWT decodedJWT = jwtUtil.validateToken(jwtToken);
                 jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_ERROR_TOKEN);
             } catch (JWTVerificationException ex) {
-                handleInvalidToken(response, ex.getMessage());
+                this.jwtUtil.handleInvalidToken(response, ex.getMessage());
                 return;
             }
         }
@@ -48,9 +48,4 @@ public class OAuth2ErrorFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private void handleInvalidToken(HttpServletResponse response, String message) throws IOException {
-        response.setStatus(HttpStatus.FORBIDDEN.value());
-        response.setContentType("application/json");
-        response.getWriter().write("{\"error\": \"" + message + "\"}");
-    }
 }

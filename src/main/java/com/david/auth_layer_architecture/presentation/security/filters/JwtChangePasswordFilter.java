@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Date;
 
 @Component
 @AllArgsConstructor
@@ -52,8 +53,10 @@ public class JwtChangePasswordFilter extends OncePerRequestFilter {
 
                 if( accessToken == null ) throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);
 
+                if( accessToken.getExpirationDate().compareTo(new Date()) < 0)  throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);
+
                 request.setAttribute("accessTokenId", accessTokenId);
-                request.setAttribute("email", username);
+                request.setAttribute("credential", accessToken.getCredential());
             } catch (JWTVerificationException ex) {
                 this.jwtUtil.handleInvalidToken(response, ex.getMessage());
                 return;

@@ -27,4 +27,5 @@ public class CommonConstants {
     public static final String TYPE_ERROR_TOKEN= "error";
     public static final String TYPE_ACCESS_TOKEN_TO_VERIFY_ACCOUNT = "verify_account";
     public static final String TYPE_REFRESH_TOKEN_TO_VERIFY_ACCOUNT = "refresh_token_to_verify_account";
+
 }

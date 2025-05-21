@@ -2,11 +2,14 @@ package com.david.auth_layer_architecture.presentation.security.filters;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.david.auth_layer_architecture.business.service.interfaces.IAccessTokenService;
+import com.david.auth_layer_architecture.business.service.interfaces.IRefreshTokenService;
 import com.david.auth_layer_architecture.common.utils.JwtUtil;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
 import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
 import com.david.auth_layer_architecture.domain.entity.AccessToken;
+import com.david.auth_layer_architecture.domain.entity.Credential;
 import com.david.auth_layer_architecture.persistence.AccessTokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,8 +29,8 @@ import java.util.Date;
 public class JwtVerifyAccountFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final AccessTokenRepository accessTokenRepository;
-
+    private final IAccessTokenService accessTokenService;
+    private final IRefreshTokenService refreshTokenService;
 
     @Override
     protected void doFilterInternal(
@@ -48,7 +51,7 @@ public class JwtVerifyAccountFilter extends OncePerRequestFilter {
 
                 String accessTokenId = jwtUtil.getSpecificClaim(decodedJWT, "jti").asString();
 
-                AccessToken accessToken = this.accessTokenRepository.getTokenByAccessTokenId(accessTokenId);
+                AccessToken accessToken = this.accessTokenService.getTokenByAccessTokenId(accessTokenId);
 
                 if (accessToken == null) throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);
                 if( accessToken.getExpirationDate().compareTo(new Date()) < 0)  throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);

@@ -13,8 +13,8 @@ import com.david.auth_layer_architecture.domain.dto.request.SignInRequest;
 import java.io.IOException;
 
 public interface IAuthService {
-    SignInResponse signIn(SignInRequest signInRequest) throws BadCredentialsException, HaveAccessWithOAuth2Exception, UserNotVerifiedException;
+    SignInResponse signIn(SignInRequest signInRequest) throws UserNotFoundException, BadCredentialsException, HaveAccessWithOAuth2Exception, UserNotVerifiedException;
 
-    SignInResponse refreshToken(String refreshToken) throws JWTVerificationException;
+    SignInResponse refreshToken(String refreshToken);
 
 }

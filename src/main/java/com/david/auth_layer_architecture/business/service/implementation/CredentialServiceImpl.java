@@ -1,20 +1,17 @@
 package com.david.auth_layer_architecture.business.service.implementation;
 
-import com.david.auth_layer_architecture.business.service.interfaces.IAccessTokenService;
-import com.david.auth_layer_architecture.business.service.interfaces.IEmailService;
-import com.david.auth_layer_architecture.business.service.interfaces.IRefreshTokenService;
-import com.david.auth_layer_architecture.common.exceptions.accessToken.AlreadyHaveAccessTokenToChangePasswordException;
+import com.david.auth_layer_architecture.business.service.interfaces.ITokenService;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
 import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
-import com.david.auth_layer_architecture.common.utils.JwtUtil;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
 import com.david.auth_layer_architecture.domain.dto.response.SignInResponse;
 import com.david.auth_layer_architecture.domain.entity.AccessToken;
-import jakarta.mail.MessagingException;
+import com.david.auth_layer_architecture.domain.events.DomainEventPublisher;
+import com.david.auth_layer_architecture.domain.events.SendEmailEvent;
+import com.david.auth_layer_architecture.domain.events.UserRegisteredEvent;
 import lombok.AllArgsConstructor;
-import org.springframework.mail.MailSendException;
 import org.springframework.stereotype.Service;
 
 import com.david.auth_layer_architecture.business.service.interfaces.ICredentialService;
@@ -28,97 +25,69 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @AllArgsConstructor
 public class CredentialServiceImpl implements ICredentialService{
-
-    private final CredentialRepository credentialRepository;
-    private final IEmailService emailService;
-    private final IAccessTokenService accessTokenService;
-    private final IRefreshTokenService refreshTokenService;
-    private final JwtUtil jwtUtil;
+    private final CredentialRepository  credentialRepository;
+    private final DomainEventPublisher  domainEventPublisher;
+    private final ITokenService         tokenService;
 
     @Override
-    @Transactional(readOnly = false, rollbackFor = {MessagingException.class, MailSendException.class})
+    @Transactional(readOnly = false)
     public MessageResponse signUp(Credential credential,  Boolean isAccessWithOAuth2) throws UserAlreadyExistException {
-        this.isUniqueUser(credential.getEmail());
+        if ( this.getCredentialByEmail(credential.getEmail()) != null ) throw new UserAlreadyExistException(CredentialMessages.USER_ALREADY_EXISTS);
 
         credentialRepository.save(credential);
 
-        if(!isAccessWithOAuth2) {
-            String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_VERIFY_ACCOUNT, CommonConstants.TYPE_ACCESS_TOKEN_TO_VERIFY_ACCOUNT);
-            String refreshToken = jwtUtil.generateRefreshToken(credential, CommonConstants.EXPIRATION_REFRESH_TOKEN_TO_VERIFY_ACCOUNT, CommonConstants.TYPE_REFRESH_TOKEN_TO_VERIFY_ACCOUNT );
-
-            AccessToken accessTokenEntity = this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_ACCESS_TOKEN_TO_VERIFY_ACCOUNT);
-            this.refreshTokenService.saveRefreshToken(refreshToken, credential, accessTokenEntity, CommonConstants.TYPE_REFRESH_TOKEN_TO_VERIFY_ACCOUNT);
-
-            this.emailService.sendEmailVerifyAccount(credential.getEmail(), accessToken, refreshToken);
-        }
+        if(!isAccessWithOAuth2) domainEventPublisher.publish(new UserRegisteredEvent(credential));
 
         return new MessageResponse(CredentialMessages.USER_CREATED_SUCCESSFULLY);
     }
 
     @Override
     public SignInResponse verifyAccount(String accessTokenId) {
-        AccessToken accessTokenToVerifyAccount = this.accessTokenService.getTokenByAccessTokenId(accessTokenId);
+        AccessToken accessToken = this.tokenService.getAccessToken(accessTokenId);
+        Credential credential = accessToken.getCredential();
 
-        Credential credential = accessTokenToVerifyAccount.getCredential();
         credential.setIsVerified(true);
         this.credentialRepository.save(credential);
 
-        this.refreshTokenService.deleteRefreshToken(accessTokenToVerifyAccount);
+        this.tokenService.revokePairTokens(accessTokenId);
 
-        String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_ACCESS_TOKEN_TO_ACCESS_APP);
-        String refreshToken = jwtUtil.generateRefreshToken(credential, CommonConstants.EXPIRATION_REFRESH_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_REFRESH_TOKEN_TO_ACCESS_APP);
-
-        AccessToken accessTokenEntity = accessTokenService.saveAccessTokenToAccessApp(accessToken, credential);
-        refreshTokenService.saveRefreshToken(refreshToken, credential, accessTokenEntity, CommonConstants.TYPE_REFRESH_TOKEN_TO_ACCESS_APP);
-        return new SignInResponse(accessToken, refreshToken);
+        return this.tokenService.generateAuthTokens(credential);
     }
 
     @Override
-    public MessageResponse refreshAccessToVerifyAccount(
-            String refreshToken,
-            String email
-    ) throws UserNotFoundException, AlreadyHaveAccessTokenToChangePasswordException {
-        Credential credential = this.isRegisteredUser(email);
-        this.accessTokenService.hasAccessToken(credential, CommonConstants.TYPE_ACCESS_TOKEN_TO_VERIFY_ACCOUNT);
+    @Transactional(readOnly = false)
+    public MessageResponse refreshAccessToVerifyAccount(Credential credential, String refreshToken) {
+        String accessToken = this.tokenService.saveAccessToken(credential, CommonConstants.TYPE_ACCESS_TOKEN_TO_VERIFY_ACCOUNT, CommonConstants.EXPIRATION_TOKEN_TO_VERIFY_ACCOUNT);
 
-        String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_VERIFY_ACCOUNT, CommonConstants.TYPE_ACCESS_TOKEN_TO_VERIFY_ACCOUNT);
-
-        this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_ACCESS_TOKEN_TO_VERIFY_ACCOUNT);
-
-        this.emailService.sendEmailVerifyAccount(credential.getEmail(), accessToken, refreshToken);
+        domainEventPublisher.publish(new SendEmailEvent(credential, accessToken, CommonConstants.TYPE_ACCESS_TOKEN_TO_VERIFY_ACCOUNT, refreshToken));
 
         return new MessageResponse(CredentialMessages.SEND_EMAIL_VERIFY_ACCOUNT_SUCCESSFULLY);
     }
 
     @Override
+    @Transactional(readOnly = false)
     public MessageResponse recoveryAccount(
             String email
-    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, AlreadyHaveAccessTokenToChangePasswordException, UserNotVerifiedException {
+    ) throws UserNotFoundException, UserNotVerifiedException, HaveAccessWithOAuth2Exception{
         Credential credential = this.isRegisteredUser(email);
 
         if(!credential.getIsVerified()) throw new UserNotVerifiedException(AuthMessages.USER_NOT_VERIFIED_ERROR);
 
         this.hasAccessWithOAuth2(credential);
 
-        this.accessTokenService.hasAccessToken(credential, CommonConstants.TYPE_ACCESS_TOKEN_TO_CHANGE_PASSWORD);
+        String accessToken = this.tokenService.saveAccessToken(credential, CommonConstants.TYPE_ACCESS_TOKEN_TO_CHANGE_PASSWORD,  CommonConstants.EXPIRATION_TOKEN_TO_CHANGE_PASSWORD);
 
-        String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_CHANGE_PASSWORD, CommonConstants.TYPE_ACCESS_TOKEN_TO_CHANGE_PASSWORD);
-        this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_ACCESS_TOKEN_TO_CHANGE_PASSWORD);
-
-        emailService.sendEmailRecoveryAccount(email, accessToken);
+        domainEventPublisher.publish(new SendEmailEvent(credential, accessToken, CommonConstants.TYPE_ACCESS_TOKEN_TO_CHANGE_PASSWORD));
 
         return new MessageResponse(CredentialMessages.RECOVERY_ACCOUNT_INSTRUCTIONS_SENT);
     }
 
     @Override
-    public MessageResponse changePassword(String password, String email, String accessTokenId) throws HaveAccessWithOAuth2Exception, UserNotFoundException {
-        Credential credential = this.isRegisteredUser(email);
-        this.hasAccessWithOAuth2(credential);
-
+    public MessageResponse changePassword(Credential credential, String password, String accessTokenId) {
         credential.setPassword(password);
         credentialRepository.save(credential);
 
-        accessTokenService.deleteAccessToken(accessTokenId);
+        this.tokenService.revokeAccessToken(accessTokenId);
         return new MessageResponse(CredentialMessages.CHANGE_PASSWORD_SUCCESSFULLY);
     }
 
@@ -140,9 +109,4 @@ public class CredentialServiceImpl implements ICredentialService{
     public void hasAccessWithOAuth2(Credential credential) throws HaveAccessWithOAuth2Exception{
         if ( credential.getIsAccesOauth() ) throw new HaveAccessWithOAuth2Exception(AuthMessages.ACCESS_WITH_OAUTH2_ERROR);
     }
-
-    private void isUniqueUser(String email) throws UserAlreadyExistException{
-        if (this.getCredentialByEmail(email) != null) throw new UserAlreadyExistException(CredentialMessages.USER_ALREADY_EXISTS);
-    }
-
 }

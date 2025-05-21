@@ -8,6 +8,7 @@ import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFou
 import com.david.auth_layer_architecture.domain.dto.request.ChangePasswordRequest;
 import com.david.auth_layer_architecture.domain.dto.response.MessageResponse;
 import com.david.auth_layer_architecture.domain.dto.response.SignInResponse;
+import com.david.auth_layer_architecture.domain.entity.AccessToken;
 import com.david.auth_layer_architecture.domain.entity.Credential;
 import jakarta.mail.MessagingException;
 
@@ -16,16 +17,13 @@ public interface ICredentialService {
 
     SignInResponse verifyAccount(String accessTokenId);
 
-    MessageResponse refreshAccessToVerifyAccount(
-            String refreshToken,
-            String email
-    ) throws UserNotFoundException, AlreadyHaveAccessTokenToChangePasswordException;
+    MessageResponse refreshAccessToVerifyAccount(Credential credential, String refreshToken);
 
     MessageResponse recoveryAccount(
             String email
-    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, AlreadyHaveAccessTokenToChangePasswordException, UserNotVerifiedException;
+    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, UserNotVerifiedException;
 
-    MessageResponse changePassword(String password, String email, String accessTokenId) throws HaveAccessWithOAuth2Exception, UserNotFoundException;
+    MessageResponse changePassword(Credential credential, String password, String accessTokenId);
 
     Credential getCredentialByEmail(String email);
 

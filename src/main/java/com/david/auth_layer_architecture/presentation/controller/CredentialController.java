@@ -1,6 +1,5 @@
 package com.david.auth_layer_architecture.presentation.controller;
 
-import com.david.auth_layer_architecture.common.exceptions.accessToken.AlreadyHaveAccessTokenToChangePasswordException;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
 import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
@@ -9,13 +8,14 @@ import com.david.auth_layer_architecture.common.utils.constants.routes.Credentia
 import com.david.auth_layer_architecture.domain.dto.request.ChangePasswordRequest;
 import com.david.auth_layer_architecture.domain.dto.request.RecoveryAccountRequest;
 import com.david.auth_layer_architecture.domain.dto.response.SignInResponse;
+import com.david.auth_layer_architecture.domain.entity.AccessToken;
+import com.david.auth_layer_architecture.domain.entity.Credential;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
@@ -33,13 +33,12 @@ import jakarta.validation.Valid;
 @AllArgsConstructor
 @RestController
 @Validated
-@RequestMapping(path = CommonConstants.PUBLIC_URL, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = CommonConstants.PUBLIC_URL, produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(
         name = "Credential",
         description = "Credential API to sign up, account recovery and change password"
 )
 public class CredentialController {
-
     private final ICredentialFacade credentialFacade;
 
     @Operation(
@@ -92,7 +91,7 @@ public class CredentialController {
     @PostMapping(CredentialRoutes.SIGN_UP_URL)
     public ResponseEntity<MessageResponse> signUp(
             @RequestBody @Valid SignUpRequest signUpRequest
-    ) throws UserAlreadyExistException, MessagingException{
+    ) throws UserAlreadyExistException{
         return ResponseEntity.ok(credentialFacade.signUp(signUpRequest));
     }
 
@@ -180,11 +179,11 @@ public class CredentialController {
     @PatchMapping(CredentialRoutes.REFRESH_ACCESS_TO_VERIFY_ACCOUNT_URL)
     public ResponseEntity<MessageResponse> refreshAccessToRecoveryAccount(
             HttpServletRequest request
-    ) throws UserNotFoundException, MessagingException, AlreadyHaveAccessTokenToChangePasswordException {
+    )  {
+        Credential credential = (Credential) request.getAttribute("credential");
         String refreshToken = (String) request.getAttribute("refreshToken");
-        String email = (String) request.getAttribute("email");
 
-        return ResponseEntity.ok(credentialFacade.refreshAccessToVerifyAccount(refreshToken, email));
+        return ResponseEntity.ok(credentialFacade.refreshAccessToVerifyAccount(credential, refreshToken));
     }
 
     @Operation(
@@ -236,7 +235,7 @@ public class CredentialController {
     @PostMapping(CredentialRoutes.RECOVERY_ACCOUNT_URL)
     public ResponseEntity<MessageResponse> recoveryAccount(
             @RequestBody @Valid RecoveryAccountRequest recoveryAccountRequest
-    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException, UserNotVerifiedException {
+    ) throws UserNotFoundException, UserNotVerifiedException, HaveAccessWithOAuth2Exception {
         return ResponseEntity.ok(credentialFacade.recoveryAccount(recoveryAccountRequest));
     }
 
@@ -330,10 +329,10 @@ public class CredentialController {
     public ResponseEntity<MessageResponse> changePassword(
             @RequestBody @Valid ChangePasswordRequest changePasswordRequest,
             HttpServletRequest request
-    ) throws HaveAccessWithOAuth2Exception, UserNotFoundException {
-        String email =(String) request.getAttribute("email");
+    ){
+        Credential credential =(Credential) request.getAttribute("credential");
         String accessTokenId = (String) request.getAttribute("accessTokenId");
 
-        return ResponseEntity.ok(credentialFacade.changePassword(changePasswordRequest, email, accessTokenId));
+        return ResponseEntity.ok(credentialFacade.changePassword(credential, changePasswordRequest, accessTokenId));
     }
 }

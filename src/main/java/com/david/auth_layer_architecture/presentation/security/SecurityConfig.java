@@ -1,5 +1,7 @@
 package com.david.auth_layer_architecture.presentation.security;
 
+import com.david.auth_layer_architecture.business.service.interfaces.IAccessTokenService;
+import com.david.auth_layer_architecture.business.service.interfaces.IRefreshTokenService;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.routes.AuthRoutes;
 import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
@@ -37,6 +39,8 @@ public class SecurityConfig {
     private final OAuth2SuccessFilter oAuth2SuccessFilter;
     private final AccessTokenRepository accessTokenRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final IRefreshTokenService refreshTokenService;
+    private final IAccessTokenService accessTokenService;
 
     @Value("${uri.frontend}")
     private String frontUri;
@@ -45,12 +49,16 @@ public class SecurityConfig {
             JwtUtil jwtUtil,
             OAuth2SuccessFilter oAuth2SuccessFilter,
             AccessTokenRepository accessTokenRepository,
-            RefreshTokenRepository refreshTokenRepository
+            RefreshTokenRepository refreshTokenRepository,
+            IRefreshTokenService refreshTokenService,
+            IAccessTokenService accessTokenService
     ) {
         this.jwtUtil = jwtUtil;
         this.oAuth2SuccessFilter = oAuth2SuccessFilter;
         this.accessTokenRepository = accessTokenRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.refreshTokenService = refreshTokenService;
+        this.accessTokenService = accessTokenService;
     }
 
     @Bean
@@ -86,8 +94,8 @@ public class SecurityConfig {
             .addFilterBefore(new JwtAccessAppFilter(jwtUtil, accessTokenRepository), BasicAuthenticationFilter.class)
             .addFilterBefore(new OAuth2ErrorFilter(jwtUtil), JwtAccessAppFilter.class)
             .addFilterBefore(new JwtChangePasswordFilter(jwtUtil, accessTokenRepository), JwtAccessAppFilter.class)
-            .addFilterBefore(new JwtVerifyAccountFilter(jwtUtil, accessTokenRepository), JwtAccessAppFilter.class)
-            .addFilterBefore(new JwtRefreshAccessToVerifyAccount(jwtUtil, refreshTokenRepository), JwtAccessAppFilter.class);
+            .addFilterBefore(new JwtVerifyAccountFilter(jwtUtil, accessTokenService, refreshTokenService), JwtAccessAppFilter.class)
+            .addFilterBefore(new JwtRefreshAccessToVerifyAccount(jwtUtil, refreshTokenService, accessTokenService), JwtAccessAppFilter.class);
 
         return httpSecurity.build();
     }

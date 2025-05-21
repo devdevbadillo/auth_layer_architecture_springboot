@@ -2,11 +2,15 @@ package com.david.auth_layer_architecture.presentation.security.filters;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.david.auth_layer_architecture.business.service.interfaces.IAccessTokenService;
+import com.david.auth_layer_architecture.business.service.interfaces.IRefreshTokenService;
+import com.david.auth_layer_architecture.common.exceptions.accessToken.AlreadyHaveAccessTokenToChangePasswordException;
 import com.david.auth_layer_architecture.common.utils.JwtUtil;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
 import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
 import com.david.auth_layer_architecture.domain.entity.AccessToken;
+import com.david.auth_layer_architecture.domain.entity.Credential;
 import com.david.auth_layer_architecture.domain.entity.RefreshToken;
 import com.david.auth_layer_architecture.persistence.AccessTokenRepository;
 import com.david.auth_layer_architecture.persistence.RefreshTokenRepository;
@@ -28,8 +32,8 @@ import java.util.Date;
 @AllArgsConstructor
 public class JwtRefreshAccessToVerifyAccount extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
-    private final RefreshTokenRepository refreshTokenRepository;
-
+    private final IRefreshTokenService refreshTokenService;
+    private final IAccessTokenService accessTokenService;
 
     @Override
     protected void doFilterInternal(
@@ -49,15 +53,13 @@ public class JwtRefreshAccessToVerifyAccount extends OncePerRequestFilter {
                 jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_REFRESH_TOKEN_TO_VERIFY_ACCOUNT);
 
                 String refreshTokenId = jwtUtil.getSpecificClaim(decodedJWT, "jti").asString();
-                RefreshToken refreshToken = this.refreshTokenRepository.findRefreshTokenByRefreshTokenId(refreshTokenId);
+                RefreshToken refreshToken = this.refreshTokenService.findRefreshTokenByRefreshTokenId(refreshTokenId);
 
                 if (refreshToken == null) throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);
                 if(refreshToken.getAccessToken().getExpirationDate().compareTo(new Date()) > 0)  throw new JWTVerificationException(AuthMessages.INVALID_TOKEN_ERROR);
 
-                String email = jwtUtil.extractUser(decodedJWT);
-
-                request.setAttribute("email", email);
                 request.setAttribute("refreshToken", jwtToken);
+                request.setAttribute("credential", refreshToken.getCredential());
             } catch (JWTVerificationException ex) {
                 this.jwtUtil.handleInvalidToken(response, ex.getMessage());
                 return;

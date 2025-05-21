@@ -2,16 +2,13 @@ package com.david.auth_layer_architecture.business.service.implementation;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.david.auth_layer_architecture.business.service.interfaces.IAccessTokenService;
-import com.david.auth_layer_architecture.business.service.interfaces.ICredentialService;
-import com.david.auth_layer_architecture.business.service.interfaces.IRefreshTokenService;
+import com.david.auth_layer_architecture.business.service.interfaces.*;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
 import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.messages.AuthMessages;
 import com.david.auth_layer_architecture.domain.dto.response.SignInResponse;
-import com.david.auth_layer_architecture.domain.entity.AccessToken;
 import com.david.auth_layer_architecture.domain.entity.Credential;
 import com.david.auth_layer_architecture.domain.entity.RefreshToken;
 import lombok.AllArgsConstructor;
@@ -23,8 +20,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.david.auth_layer_architecture.business.service.interfaces.IAuthService;
-import com.david.auth_layer_architecture.common.utils.JwtUtil;
 import com.david.auth_layer_architecture.common.utils.constants.messages.CredentialMessages;
 import com.david.auth_layer_architecture.domain.dto.request.SignInRequest;
 
@@ -33,46 +28,27 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class AuthServiceImpl implements IAuthService{
-
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
     private final ICredentialService credentialService;
-    private final IAccessTokenService accessTokenService;
-    private final IRefreshTokenService refreshTokenService;
+    private final ITokenService tokenService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
-    public SignInResponse signIn(SignInRequest signInRequest) throws BadCredentialsException, HaveAccessWithOAuth2Exception, UserNotVerifiedException {
-        try{
-            Credential credential = this.credentialService.isRegisteredUser(signInRequest.getEmail());
-            this.credentialService.hasAccessWithOAuth2(credential);
+    public SignInResponse signIn(SignInRequest signInRequest) throws UserNotFoundException, BadCredentialsException, HaveAccessWithOAuth2Exception, UserNotVerifiedException {
+        Credential credential = this.credentialService.isRegisteredUser(signInRequest.getEmail());
+        this.credentialService.hasAccessWithOAuth2(credential);
 
-            if(!credential.getIsVerified()) throw new UserNotVerifiedException(AuthMessages.USER_NOT_VERIFIED_ERROR);
+        if(!credential.getIsVerified()) throw new UserNotVerifiedException(AuthMessages.USER_NOT_VERIFIED_ERROR);
 
-            Authentication authentication = this.authenticate(credential, signInRequest.getPassword());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        Authentication authentication = this.authenticate(credential, signInRequest.getPassword());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_ACCESS_TOKEN_TO_ACCESS_APP);
-            String refreshToken = jwtUtil.generateRefreshToken(credential, CommonConstants.EXPIRATION_REFRESH_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_REFRESH_TOKEN_TO_ACCESS_APP);
-
-            AccessToken accessTokenEntity = accessTokenService.saveAccessTokenToAccessApp(accessToken, credential);
-            refreshTokenService.saveRefreshToken(refreshToken, credential, accessTokenEntity, CommonConstants.TYPE_REFRESH_TOKEN_TO_ACCESS_APP);
-
-            return new SignInResponse(accessToken, refreshToken);
-        }catch (UserNotFoundException e) {
-            throw new BadCredentialsException(e.getMessage());
-        }
+        return this.tokenService.generateAuthTokens(credential);
     }
 
     @Override
-    public SignInResponse refreshToken(String refreshToken) throws JWTVerificationException {
-        DecodedJWT decodedJWT = jwtUtil.validateToken(refreshToken);
-        jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_REFRESH_TOKEN_TO_ACCESS_APP);
+    public SignInResponse refreshToken(String refreshToken){
+        String accessToken = this.tokenService.refreshAccessTokenToAccessApp(refreshToken);
 
-        RefreshToken refreshTokenEntity = this.refreshTokenService.findRefreshTokenByRefreshTokenId(decodedJWT.getClaim("jti").asString());
-
-        String accessToken = jwtUtil.generateAccessToken(refreshTokenEntity.getCredential(), CommonConstants.EXPIRATION_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_ACCESS_TOKEN_TO_ACCESS_APP);
-
-        this.accessTokenService.saveAccessTokenToAccessAppWithRefreshToken(refreshTokenEntity.getAccessToken(), accessToken);
         return new SignInResponse(accessToken, refreshToken);
     }
 

@@ -20,12 +20,12 @@ public class AuthFacadeImpl implements IAuthFacade{
     private final IAuthService authService;
 
     @Override
-    public SignInResponse signIn(SignInRequest signInRequest) throws  BadCredentialsException, HaveAccessWithOAuth2Exception, UserNotVerifiedException {
+    public SignInResponse signIn(SignInRequest signInRequest) throws UserNotFoundException, BadCredentialsException, HaveAccessWithOAuth2Exception, UserNotVerifiedException {
         return this.authService.signIn(signInRequest);
     }
 
     @Override
-    public SignInResponse refreshToken(String refreshToken) throws JWTVerificationException {
+    public SignInResponse refreshToken(String refreshToken) {
         return this.authService.refreshToken(refreshToken);
     }
 }

@@ -3,6 +3,7 @@ package com.david.auth_layer_architecture.presentation.controller;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
 import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
+import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.routes.AuthRoutes;
 import com.david.auth_layer_architecture.domain.dto.response.MessageResponse;
@@ -88,7 +89,7 @@ public class AuthController {
     @PostMapping(value = AuthRoutes.SIGN_IN_URL, consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<SignInResponse> signIn(
             @RequestBody @Valid SignInRequest signInRequest
-    ) throws BadCredentialsException, HaveAccessWithOAuth2Exception, UserNotVerifiedException {
+    ) throws UserNotFoundException, BadCredentialsException, HaveAccessWithOAuth2Exception, UserNotVerifiedException {
         return ResponseEntity.ok(authFacade.signIn(signInRequest));
     }
 
@@ -142,7 +143,7 @@ public class AuthController {
     @PostMapping(value = AuthRoutes.REFRESH_TOKEN_URL, consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<SignInResponse> refreshToken(
             @RequestHeader @NotBlank @NotNull String refreshToken
-    ) throws JWTVerificationException {
+    ) {
         return ResponseEntity.ok(authFacade.refreshToken(refreshToken));
     }
 

@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -45,7 +44,7 @@ public class JwtVerifyAccountFilter extends OncePerRequestFilter {
 
             try {
                 DecodedJWT decodedJWT = jwtUtil.validateToken(jwtToken);
-                jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_VERIFY_ACCOUNT);
+                jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_ACCESS_TOKEN_TO_VERIFY_ACCOUNT);
 
                 String accessTokenId = jwtUtil.getSpecificClaim(decodedJWT, "jti").asString();
 

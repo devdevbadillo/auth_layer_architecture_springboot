@@ -48,13 +48,13 @@ public class AccessTokenServiceImpl implements IAccessTokenService {
 
     @Override
     public AccessToken saveAccessTokenToAccessApp(String accessToken, Credential credential) {
-        AccessToken newAccessToken = accessTokenEntityMapper.toTokenEntity(accessToken, credential, CommonConstants.TYPE_ACCESS_TOKEN);
+        AccessToken newAccessToken = accessTokenEntityMapper.toTokenEntity(accessToken, credential, CommonConstants.TYPE_ACCESS_TOKEN_TO_ACCESS_APP);
         return accessTokenRepository.save(newAccessToken);
     }
 
     @Override
     public void saveAccessTokenToAccessAppWithRefreshToken(AccessToken oldAccessToken, String accessToken) {
-        AccessToken newAccessToken = accessTokenEntityMapper.toTokenEntity(accessToken, oldAccessToken.getCredential(), CommonConstants.TYPE_ACCESS_TOKEN);
+        AccessToken newAccessToken = accessTokenEntityMapper.toTokenEntity(accessToken, oldAccessToken.getCredential(), CommonConstants.TYPE_ACCESS_TOKEN_TO_ACCESS_APP);
         this.setOldAccessTokenToChangePassword(oldAccessToken, newAccessToken);
         accessTokenRepository.save(oldAccessToken);
     }

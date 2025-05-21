@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class ChangePasswordRequest {
-
     @NotBlank
     @NotNull
     @Size(min = 8, max = 20)
@@ -21,5 +20,4 @@ public class ChangePasswordRequest {
     @NotNull
     @Size(min = 8, max = 20)
     private String repeatPassword;
-
 }

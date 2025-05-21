@@ -39,7 +39,7 @@ public class SecurityConfig {
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${uri.frontend}")
-    private String frontendUri;
+    private String frontUri;
 
     public SecurityConfig(
             JwtUtil jwtUtil,
@@ -80,7 +80,7 @@ public class SecurityConfig {
             }).oauth2Login(oauth2 -> oauth2
                         .successHandler(oAuth2SuccessFilter)
                         .failureHandler(( request, response, exception) -> {
-                            response.sendRedirect(frontendUri + CommonConstants.SIGN_IN_FRONT_URL);
+                            response.sendRedirect(frontUri + CommonConstants.SIGN_IN_FRONT_URL);
                         })
                 )
             .addFilterBefore(new JwtAccessAppFilter(jwtUtil, accessTokenRepository), BasicAuthenticationFilter.class)
@@ -95,7 +95,7 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfig(){
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(List.of(frontendUri));
+        corsConfiguration.setAllowedOrigins(List.of(frontUri));
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "DELETE", "PUT"));
         corsConfiguration.setAllowedHeaders(List.of("*"));
 

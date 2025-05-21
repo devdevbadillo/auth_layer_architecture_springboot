@@ -9,7 +9,6 @@ import com.david.auth_layer_architecture.domain.entity.AccessToken;
 import com.david.auth_layer_architecture.persistence.AccessTokenRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -51,7 +50,7 @@ public class JwtAccessAppFilter extends OncePerRequestFilter {
 
             try {
                 DecodedJWT decodedJWT = jwtUtil.validateToken(jwtToken);
-                jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_ACCESS_TOKEN);
+                jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_ACCESS_TOKEN_TO_ACCESS_APP);
 
                 String accessTokenId = jwtUtil.getSpecificClaim(decodedJWT, "jti").asString();
                 AccessToken accessToken = this.accessTokenRepository.getTokenByAccessTokenId(accessTokenId);

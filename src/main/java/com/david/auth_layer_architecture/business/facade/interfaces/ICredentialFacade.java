@@ -10,21 +10,20 @@ import com.david.auth_layer_architecture.domain.dto.request.RecoveryAccountReque
 import com.david.auth_layer_architecture.domain.dto.request.SignUpRequest;
 import com.david.auth_layer_architecture.domain.dto.response.MessageResponse;
 import com.david.auth_layer_architecture.domain.dto.response.SignInResponse;
-import jakarta.mail.MessagingException;
 
 public interface ICredentialFacade {
-   MessageResponse signUp(SignUpRequest signUpRequest) throws UserAlreadyExistException, MessagingException;
+   MessageResponse signUp(SignUpRequest signUpRequest) throws UserAlreadyExistException;
 
    SignInResponse verifyAccount(String accessTokenId);
 
    MessageResponse refreshAccessToVerifyAccount(
            String refreshToken,
            String email
-   ) throws UserNotFoundException, AlreadyHaveAccessTokenToChangePasswordException, MessagingException;
+   ) throws UserNotFoundException, AlreadyHaveAccessTokenToChangePasswordException;
 
    MessageResponse recoveryAccount(
            RecoveryAccountRequest recoveryAccountRequest
-   ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException, UserNotVerifiedException;
+   ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, AlreadyHaveAccessTokenToChangePasswordException, UserNotVerifiedException;
 
    MessageResponse changePassword(
            ChangePasswordRequest changePasswordRequest, String email, String accessTokenId

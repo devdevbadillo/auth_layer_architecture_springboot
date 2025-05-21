@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.david.auth_layer_architecture.domain.dto.response.MessageResponse;
 
 @RestController
-@RequestMapping(path = CommonConstants.SECURE_URL, produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = CommonConstants.SECURE_URL, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 @Tag(
         name = "User",
         description = "Endpoint for authenticated users"

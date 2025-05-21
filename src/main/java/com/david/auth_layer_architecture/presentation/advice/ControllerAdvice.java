@@ -6,10 +6,13 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.david.auth_layer_architecture.common.exceptions.accessToken.AlreadyHaveAccessTokenToChangePasswordException;
 import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
 import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
+import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
+import com.david.auth_layer_architecture.common.utils.constants.messages.EmailMessages;
 import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -75,11 +78,6 @@ public class ControllerAdvice {
         return new ResponseEntity<>(Map.of(KEY_MESSAGE, ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler( MessagingException.class )
-    private ResponseEntity<Map<String, String>> handleMessagingException(MessagingException ex){
-        return new ResponseEntity<>(Map.of(KEY_MESSAGE, ex.getMessage()), HttpStatus.FAILED_DEPENDENCY);
-    }
-
     @ExceptionHandler( AlreadyHaveAccessTokenToChangePasswordException.class )
     private ResponseEntity<Map<String, String>> handleAlreadyHaveAccessTokenToChangePasswordException(AlreadyHaveAccessTokenToChangePasswordException ex){
         return new ResponseEntity<>(Map.of(KEY_MESSAGE, ex.getMessage()), HttpStatus.BAD_REQUEST);
@@ -88,5 +86,20 @@ public class ControllerAdvice {
     @ExceptionHandler( UserNotVerifiedException.class)
     private ResponseEntity<Map<String, String>> handleUserNotVerifiedException(UserNotVerifiedException ex){
         return new ResponseEntity<>(Map.of(KEY_MESSAGE, ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    private ResponseEntity<Map<String, String>> handleUserNotFoundException(UserNotFoundException ex){
+        return new ResponseEntity<>(Map.of(KEY_MESSAGE, ex.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MailException.class)
+    private ResponseEntity<Map<String, String>> handleMailException(MailException ex){
+        return new ResponseEntity<>(Map.of(KEY_MESSAGE, EmailMessages.ERROR_SENDING_EMAIL_MESSAGE), HttpStatus.FAILED_DEPENDENCY);
+    }
+
+    @ExceptionHandler(MessagingException.class)
+    private ResponseEntity<Map<String, String>> handleMessagingException(MessagingException ex){
+        return new ResponseEntity<>(Map.of(KEY_MESSAGE,  EmailMessages.ERROR_SENDING_EMAIL_MESSAGE), HttpStatus.FAILED_DEPENDENCY);
     }
 }

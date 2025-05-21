@@ -33,7 +33,7 @@ import jakarta.validation.Valid;
 @AllArgsConstructor
 @RestController
 @Validated
-@RequestMapping(path = CommonConstants.PUBLIC_URL, produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = CommonConstants.PUBLIC_URL, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 @Tag(
         name = "Credential",
         description = "Credential API to sign up, account recovery and change password"

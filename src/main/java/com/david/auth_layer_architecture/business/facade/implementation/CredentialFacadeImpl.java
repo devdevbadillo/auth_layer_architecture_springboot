@@ -8,9 +8,7 @@ import com.david.auth_layer_architecture.common.mapper.CredentialEntityMapper;
 import com.david.auth_layer_architecture.domain.dto.request.ChangePasswordRequest;
 import com.david.auth_layer_architecture.domain.dto.request.RecoveryAccountRequest;
 import com.david.auth_layer_architecture.domain.dto.response.SignInResponse;
-import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.david.auth_layer_architecture.business.facade.interfaces.ICredentialFacade;
@@ -28,7 +26,7 @@ public class CredentialFacadeImpl implements ICredentialFacade{
     private final CredentialEntityMapper credentialEntityMapper;
 
     @Override
-    public MessageResponse signUp(SignUpRequest signUpRequest) throws UserAlreadyExistException, MessagingException {
+    public MessageResponse signUp(SignUpRequest signUpRequest) throws UserAlreadyExistException {
         Credential credential = this.credentialEntityMapper.toCredentialEntity(signUpRequest);
         return credentialService.signUp(credential, false);
     }
@@ -39,14 +37,14 @@ public class CredentialFacadeImpl implements ICredentialFacade{
     }
 
     @Override
-    public MessageResponse refreshAccessToVerifyAccount(String refreshToken, String email) throws UserNotFoundException, AlreadyHaveAccessTokenToChangePasswordException, MessagingException {
+    public MessageResponse refreshAccessToVerifyAccount(String refreshToken, String email) throws UserNotFoundException, AlreadyHaveAccessTokenToChangePasswordException {
         return this.credentialService.refreshAccessToVerifyAccount(refreshToken, email);
     }
 
     @Override
     public MessageResponse recoveryAccount(
             RecoveryAccountRequest recoveryAccountRequest
-    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException, UserNotVerifiedException {
+    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, AlreadyHaveAccessTokenToChangePasswordException, UserNotVerifiedException {
         return this.credentialService.recoveryAccount(recoveryAccountRequest.getEmail());
     }
 

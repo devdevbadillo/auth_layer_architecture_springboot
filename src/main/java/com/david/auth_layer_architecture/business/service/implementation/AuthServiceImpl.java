@@ -27,7 +27,7 @@ import com.david.auth_layer_architecture.business.service.interfaces.IAuthServic
 import com.david.auth_layer_architecture.common.utils.JwtUtil;
 import com.david.auth_layer_architecture.common.utils.constants.messages.CredentialMessages;
 import com.david.auth_layer_architecture.domain.dto.request.SignInRequest;
-import java.util.Date;
+
 import java.util.List;
 
 @Service
@@ -51,11 +51,12 @@ public class AuthServiceImpl implements IAuthService{
             Authentication authentication = this.authenticate(credential, signInRequest.getPassword());
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_ACCESS_TOKEN );
-            String refreshToken = jwtUtil.generateRefreshToken(credential, CommonConstants.EXPIRATION_REFRESH_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_REFRESH_TOKEN );
+            String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_ACCESS_TOKEN_TO_ACCESS_APP);
+            String refreshToken = jwtUtil.generateRefreshToken(credential, CommonConstants.EXPIRATION_REFRESH_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_REFRESH_TOKEN_TO_ACCESS_APP);
 
             AccessToken accessTokenEntity = accessTokenService.saveAccessTokenToAccessApp(accessToken, credential);
-            refreshTokenService.saveRefreshToken(refreshToken, credential, accessTokenEntity, CommonConstants.TYPE_REFRESH_TOKEN);
+            refreshTokenService.saveRefreshToken(refreshToken, credential, accessTokenEntity, CommonConstants.TYPE_REFRESH_TOKEN_TO_ACCESS_APP);
+
             return new SignInResponse(accessToken, refreshToken);
         }catch (UserNotFoundException e) {
             throw new BadCredentialsException(e.getMessage());
@@ -65,11 +66,11 @@ public class AuthServiceImpl implements IAuthService{
     @Override
     public SignInResponse refreshToken(String refreshToken) throws JWTVerificationException {
         DecodedJWT decodedJWT = jwtUtil.validateToken(refreshToken);
-        jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_REFRESH_TOKEN);
+        jwtUtil.validateTypeToken(decodedJWT, CommonConstants.TYPE_REFRESH_TOKEN_TO_ACCESS_APP);
 
         RefreshToken refreshTokenEntity = this.refreshTokenService.findRefreshTokenByRefreshTokenId(decodedJWT.getClaim("jti").asString());
 
-        String accessToken = jwtUtil.generateAccessToken(refreshTokenEntity.getCredential(), CommonConstants.EXPIRATION_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_ACCESS_TOKEN );
+        String accessToken = jwtUtil.generateAccessToken(refreshTokenEntity.getCredential(), CommonConstants.EXPIRATION_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_ACCESS_TOKEN_TO_ACCESS_APP);
 
         this.accessTokenService.saveAccessTokenToAccessAppWithRefreshToken(refreshTokenEntity.getAccessToken(), accessToken);
         return new SignInResponse(accessToken, refreshToken);

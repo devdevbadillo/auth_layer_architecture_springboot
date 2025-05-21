@@ -14,6 +14,7 @@ import com.david.auth_layer_architecture.domain.dto.response.SignInResponse;
 import com.david.auth_layer_architecture.domain.entity.AccessToken;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
+import org.springframework.mail.MailSendException;
 import org.springframework.stereotype.Service;
 
 import com.david.auth_layer_architecture.business.service.interfaces.ICredentialService;
@@ -22,8 +23,7 @@ import com.david.auth_layer_architecture.common.utils.constants.messages.Credent
 import com.david.auth_layer_architecture.domain.dto.response.MessageResponse;
 import com.david.auth_layer_architecture.domain.entity.Credential;
 import com.david.auth_layer_architecture.persistence.CredentialRepository;
-
-import java.util.Date;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
@@ -36,16 +36,17 @@ public class CredentialServiceImpl implements ICredentialService{
     private final JwtUtil jwtUtil;
 
     @Override
-    public MessageResponse signUp(Credential credential,  Boolean isAccessWithOAuth2) throws UserAlreadyExistException, MessagingException {
+    @Transactional(readOnly = false, rollbackFor = {MessagingException.class, MailSendException.class})
+    public MessageResponse signUp(Credential credential,  Boolean isAccessWithOAuth2) throws UserAlreadyExistException {
         this.isUniqueUser(credential.getEmail());
 
         credentialRepository.save(credential);
 
         if(!isAccessWithOAuth2) {
-            String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_VERIFY_ACCOUNT, CommonConstants.TYPE_VERIFY_ACCOUNT );
+            String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_VERIFY_ACCOUNT, CommonConstants.TYPE_ACCESS_TOKEN_TO_VERIFY_ACCOUNT);
             String refreshToken = jwtUtil.generateRefreshToken(credential, CommonConstants.EXPIRATION_REFRESH_TOKEN_TO_VERIFY_ACCOUNT, CommonConstants.TYPE_REFRESH_TOKEN_TO_VERIFY_ACCOUNT );
 
-            AccessToken accessTokenEntity = this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_VERIFY_ACCOUNT);
+            AccessToken accessTokenEntity = this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_ACCESS_TOKEN_TO_VERIFY_ACCOUNT);
             this.refreshTokenService.saveRefreshToken(refreshToken, credential, accessTokenEntity, CommonConstants.TYPE_REFRESH_TOKEN_TO_VERIFY_ACCOUNT);
 
             this.emailService.sendEmailVerifyAccount(credential.getEmail(), accessToken, refreshToken);
@@ -64,11 +65,11 @@ public class CredentialServiceImpl implements ICredentialService{
 
         this.refreshTokenService.deleteRefreshToken(accessTokenToVerifyAccount);
 
-        String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_ACCESS_TOKEN );
-        String refreshToken = jwtUtil.generateRefreshToken(credential, CommonConstants.EXPIRATION_REFRESH_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_REFRESH_TOKEN );
+        String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_ACCESS_TOKEN_TO_ACCESS_APP);
+        String refreshToken = jwtUtil.generateRefreshToken(credential, CommonConstants.EXPIRATION_REFRESH_TOKEN_TO_ACCESS_APP, CommonConstants.TYPE_REFRESH_TOKEN_TO_ACCESS_APP);
 
         AccessToken accessTokenEntity = accessTokenService.saveAccessTokenToAccessApp(accessToken, credential);
-        refreshTokenService.saveRefreshToken(refreshToken, credential, accessTokenEntity, CommonConstants.TYPE_REFRESH_TOKEN);
+        refreshTokenService.saveRefreshToken(refreshToken, credential, accessTokenEntity, CommonConstants.TYPE_REFRESH_TOKEN_TO_ACCESS_APP);
         return new SignInResponse(accessToken, refreshToken);
     }
 
@@ -76,13 +77,13 @@ public class CredentialServiceImpl implements ICredentialService{
     public MessageResponse refreshAccessToVerifyAccount(
             String refreshToken,
             String email
-    ) throws UserNotFoundException, AlreadyHaveAccessTokenToChangePasswordException, MessagingException {
+    ) throws UserNotFoundException, AlreadyHaveAccessTokenToChangePasswordException {
         Credential credential = this.isRegisteredUser(email);
-        this.accessTokenService.hasAccessToken(credential, CommonConstants.TYPE_VERIFY_ACCOUNT);
+        this.accessTokenService.hasAccessToken(credential, CommonConstants.TYPE_ACCESS_TOKEN_TO_VERIFY_ACCOUNT);
 
-        String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_VERIFY_ACCOUNT, CommonConstants.TYPE_VERIFY_ACCOUNT );
+        String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_VERIFY_ACCOUNT, CommonConstants.TYPE_ACCESS_TOKEN_TO_VERIFY_ACCOUNT);
 
-        this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_VERIFY_ACCOUNT);
+        this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_ACCESS_TOKEN_TO_VERIFY_ACCOUNT);
 
         this.emailService.sendEmailVerifyAccount(credential.getEmail(), accessToken, refreshToken);
 
@@ -92,14 +93,17 @@ public class CredentialServiceImpl implements ICredentialService{
     @Override
     public MessageResponse recoveryAccount(
             String email
-    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException, UserNotVerifiedException {
+    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, AlreadyHaveAccessTokenToChangePasswordException, UserNotVerifiedException {
         Credential credential = this.isRegisteredUser(email);
-        if(!credential.getIsVerified()) throw new UserNotVerifiedException(AuthMessages.USER_NOT_VERIFIED_ERROR);
-        this.hasAccessWithOAuth2(credential);
-        this.accessTokenService.hasAccessToken(credential, CommonConstants.TYPE_CHANGE_PASSWORD);
 
-        String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_CHANGE_PASSWORD, CommonConstants.TYPE_CHANGE_PASSWORD );
-        this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_CHANGE_PASSWORD);
+        if(!credential.getIsVerified()) throw new UserNotVerifiedException(AuthMessages.USER_NOT_VERIFIED_ERROR);
+
+        this.hasAccessWithOAuth2(credential);
+
+        this.accessTokenService.hasAccessToken(credential, CommonConstants.TYPE_ACCESS_TOKEN_TO_CHANGE_PASSWORD);
+
+        String accessToken = jwtUtil.generateAccessToken(credential, CommonConstants.EXPIRATION_TOKEN_TO_CHANGE_PASSWORD, CommonConstants.TYPE_ACCESS_TOKEN_TO_CHANGE_PASSWORD);
+        this.accessTokenService.saveAccessToken(accessToken, credential, CommonConstants.TYPE_ACCESS_TOKEN_TO_CHANGE_PASSWORD);
 
         emailService.sendEmailRecoveryAccount(email, accessToken);
 
@@ -118,23 +122,27 @@ public class CredentialServiceImpl implements ICredentialService{
         return new MessageResponse(CredentialMessages.CHANGE_PASSWORD_SUCCESSFULLY);
     }
 
+    @Override
+    public Credential getCredentialByEmail(String email) {
+        return credentialRepository.getCredentialByEmail(email);
+    }
 
     @Override
     public Credential isRegisteredUser(String email) throws UserNotFoundException{
-        Credential credential = credentialRepository.getCredentialByEmail(email);
+        Credential credential = this.getCredentialByEmail(email);
+
         if (credential == null) throw new UserNotFoundException(CredentialMessages.USER_NOT_REGISTERED);
+
         return credential;
     }
 
     @Override
     public void hasAccessWithOAuth2(Credential credential) throws HaveAccessWithOAuth2Exception{
-        if ( credential.getIsAccesOauth() ){
-            throw new HaveAccessWithOAuth2Exception(AuthMessages.ACCESS_WITH_OAUTH2_ERROR);
-        }
+        if ( credential.getIsAccesOauth() ) throw new HaveAccessWithOAuth2Exception(AuthMessages.ACCESS_WITH_OAUTH2_ERROR);
     }
 
     private void isUniqueUser(String email) throws UserAlreadyExistException{
-        if (credentialRepository.getCredentialByEmail(email) != null) throw new UserAlreadyExistException(CredentialMessages.USER_ALREADY_EXISTS);
+        if (this.getCredentialByEmail(email) != null) throw new UserAlreadyExistException(CredentialMessages.USER_ALREADY_EXISTS);
     }
 
 }

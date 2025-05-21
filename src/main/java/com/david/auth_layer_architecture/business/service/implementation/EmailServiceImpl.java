@@ -1,5 +1,8 @@
 package com.david.auth_layer_architecture.business.service.implementation;
 
+import com.david.auth_layer_architecture.common.utils.constants.messages.EmailMessages;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
@@ -13,12 +16,17 @@ public class EmailServiceImpl implements IEmailService {
 
     private final JavaMailSender mailSender;
 
+    private static final String FROM_EMAIL = "noreply@apptest.com";
+
+    @Value("${uri.frontend}")
+    private String frontUri;
+
     EmailServiceImpl(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
 
     @Override
-    public void sendEmailRecoveryAccount(String email, String accessToken) throws MessagingException{
+    public void sendEmailRecoveryAccount(String email, String accessToken){
         String htmlMsg = """
                         <h1>Change Password Request</h1>
                         <p>We received a request to reset your password for your account associated with this email address.</p>
@@ -28,7 +36,7 @@ public class EmailServiceImpl implements IEmailService {
                         </div>
                         <p>To change your password, please click the link below:</p>
                         <ol>
-                            <li><a href="http://localhost:4200/auth/change-password?accessToken=%s">Change Your Password</a></li>
+                            <li><a href="%s/auth/change-password?accessToken=%s">Change Your Password</a></li>
                         </ol>
                         <p>If you didn't request a password reset, you can safely ignore this email.</p>
 
@@ -46,7 +54,7 @@ public class EmailServiceImpl implements IEmailService {
     }
 
     @Override
-    public void sendEmailVerifyAccount(String email, String accessToken, String refreshToken) throws MessagingException {
+    public void sendEmailVerifyAccount(String email, String accessToken, String refreshToken) {
         String htmlMsg = """
                         <h1>Verify Account</h1>
                         <p>We received a request to verify your account for your account associated with this email address.</p>
@@ -56,8 +64,8 @@ public class EmailServiceImpl implements IEmailService {
                         </div>
                         <p>To verify your account, please click the link below:</p>
                         <ol>
-                            <li><a href="http://localhost:4200/auth/verify-account?accessToken=%s">Verify Account</a></li>
-                            <li>If the link has expired, click here: <a href="http://localhost:4200/auth/refresh-token-to-verify-account?refreshToken=%s">New access</a></li>
+                            <li><a href="%s/auth/verify-account?accessToken=%s">Verify Account</a></li>
+                            <li>If the link has expired, click here: <a href="%s/auth/refresh-token-to-verify-account?refreshToken=%s">New access</a></li>
                         </ol>
                         <p>If you didn't request a password reset, you can safely ignore this email.</p>
 
@@ -75,33 +83,33 @@ public class EmailServiceImpl implements IEmailService {
     }
 
 
-    private void sendEmail(String email, String accessToken, String htmlMsg) throws MessagingException {
+    private void sendEmail(String email, String accessToken, String htmlMsg)  {
         MimeMessage message = mailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setTo(email);
             helper.setSubject("Change Password Request");
-            helper.setText(String.format(htmlMsg, email, accessToken), true); // true indicates HTML
-            helper.setFrom("noreply@apptest.com");
+            helper.setText(String.format(htmlMsg, email, frontUri, accessToken), true); // true indicates HTML
+            helper.setFrom(FROM_EMAIL);
 
             mailSender.send(message);
         } catch (MessagingException e) {
-            throw new MessagingException("Error sending email");
+            throw new MailSendException(EmailMessages.ERROR_SENDING_EMAIL_MESSAGE);
         }
     }
 
-    private void sendEmail(String email, String accessToken, String refreshToken, String htmlMsg) throws MessagingException {
+    private void sendEmail(String email, String accessToken, String refreshToken, String htmlMsg)  {
         MimeMessage message = mailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setTo(email);
             helper.setSubject("Verify Account");
-            helper.setText(String.format(htmlMsg, email, accessToken, refreshToken), true); // true indicates HTML
-            helper.setFrom("noreply@apptest.com");
+            helper.setText(String.format(htmlMsg, email, frontUri, accessToken, frontUri, refreshToken), true); // true indicates HTML
+            helper.setFrom(FROM_EMAIL);
 
             mailSender.send(message);
-        } catch (MessagingException e) {
-            throw new MessagingException("Error sending email");
+        } catch (MessagingException | MailSendException e) {
+            throw new MailSendException(EmailMessages.ERROR_SENDING_EMAIL_MESSAGE);
         }
     }
 }

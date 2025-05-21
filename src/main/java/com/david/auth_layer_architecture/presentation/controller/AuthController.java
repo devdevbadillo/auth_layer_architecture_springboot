@@ -36,7 +36,6 @@ import jakarta.validation.Valid;
     description = "Authentication endpoint"
 )
 public class AuthController {
-
     private final IAuthFacade authFacade;
 
     @Operation(
@@ -86,7 +85,7 @@ public class AuthController {
             )
 
     })
-    @PostMapping(AuthRoutes.SIGN_IN_URL)
+    @PostMapping(value = AuthRoutes.SIGN_IN_URL, consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<SignInResponse> signIn(
             @RequestBody @Valid SignInRequest signInRequest
     ) throws BadCredentialsException, HaveAccessWithOAuth2Exception, UserNotVerifiedException {
@@ -140,7 +139,7 @@ public class AuthController {
             )
 
     })
-    @PostMapping(AuthRoutes.REFRESH_TOKEN_URL)
+    @PostMapping(value = AuthRoutes.REFRESH_TOKEN_URL, consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<SignInResponse> refreshToken(
             @RequestHeader @NotBlank @NotNull String refreshToken
     ) throws JWTVerificationException {

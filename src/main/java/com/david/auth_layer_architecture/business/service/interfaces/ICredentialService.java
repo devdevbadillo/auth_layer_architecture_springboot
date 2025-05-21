@@ -12,20 +12,22 @@ import com.david.auth_layer_architecture.domain.entity.Credential;
 import jakarta.mail.MessagingException;
 
 public interface ICredentialService {
-    MessageResponse signUp(Credential credential, Boolean isAccessWithOAuth2) throws UserAlreadyExistException, MessagingException;
+    MessageResponse signUp(Credential credential, Boolean isAccessWithOAuth2) throws UserAlreadyExistException;
 
     SignInResponse verifyAccount(String accessTokenId);
 
     MessageResponse refreshAccessToVerifyAccount(
             String refreshToken,
             String email
-    ) throws UserNotFoundException, AlreadyHaveAccessTokenToChangePasswordException, MessagingException;
+    ) throws UserNotFoundException, AlreadyHaveAccessTokenToChangePasswordException;
 
     MessageResponse recoveryAccount(
             String email
-    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, MessagingException, AlreadyHaveAccessTokenToChangePasswordException, UserNotVerifiedException;
+    ) throws UserNotFoundException, HaveAccessWithOAuth2Exception, AlreadyHaveAccessTokenToChangePasswordException, UserNotVerifiedException;
 
     MessageResponse changePassword(String password, String email, String accessTokenId) throws HaveAccessWithOAuth2Exception, UserNotFoundException;
+
+    Credential getCredentialByEmail(String email);
 
     Credential isRegisteredUser(String email) throws UserNotFoundException;
 

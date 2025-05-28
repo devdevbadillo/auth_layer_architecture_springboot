@@ -1,13 +1,11 @@
 package com.david.auth_layer_architecture.common.mapper;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.david.auth_layer_architecture.business.service.interfaces.ITypeTokenService;
+import com.david.auth_layer_architecture.business.interfaces.domain.ITypeTokenService;
 import com.david.auth_layer_architecture.common.utils.JwtUtil;
 import com.david.auth_layer_architecture.domain.entity.AccessToken;
 import com.david.auth_layer_architecture.domain.entity.Credential;
 import com.david.auth_layer_architecture.domain.entity.RefreshToken;
-import com.david.auth_layer_architecture.domain.entity.TypeToken;
-import com.david.auth_layer_architecture.persistence.TypeTokenRepository;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -1,13 +1,13 @@
 package com.david.auth_layer_architecture.business.services;
 
-import com.david.auth_layer_architecture.business.service.implementation.CredentialServiceImpl;
-import com.david.auth_layer_architecture.business.service.interfaces.IAccessTokenService;
-import com.david.auth_layer_architecture.business.service.interfaces.IEmailService;
-import com.david.auth_layer_architecture.business.service.interfaces.IRefreshTokenService;
+import com.david.auth_layer_architecture.business.impl.application.CredentialServiceImpl;
+import com.david.auth_layer_architecture.business.interfaces.domain.IAccessTokenService;
+import com.david.auth_layer_architecture.infrestructure.services.interfaces.IEmailService;
+import com.david.auth_layer_architecture.business.interfaces.domain.IRefreshTokenService;
 import com.david.auth_layer_architecture.common.exceptions.credential.UserAlreadyExistException;
 import com.david.auth_layer_architecture.common.utils.JwtUtil;
 import com.david.auth_layer_architecture.domain.entity.Credential;
-import com.david.auth_layer_architecture.persistence.CredentialRepository;
+import com.david.auth_layer_architecture.infrestructure.repository.CredentialRepository;
 import jakarta.mail.MessagingException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

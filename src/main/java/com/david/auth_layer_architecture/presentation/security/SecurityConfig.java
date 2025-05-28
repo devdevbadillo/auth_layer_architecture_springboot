@@ -1,13 +1,18 @@
 package com.david.auth_layer_architecture.presentation.security;
 
-import com.david.auth_layer_architecture.business.service.interfaces.IAccessTokenService;
-import com.david.auth_layer_architecture.business.service.interfaces.IRefreshTokenService;
+import com.david.auth_layer_architecture.business.interfaces.domain.IAccessTokenService;
+import com.david.auth_layer_architecture.business.interfaces.domain.IRefreshTokenService;
 import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
 import com.david.auth_layer_architecture.common.utils.constants.routes.AuthRoutes;
 import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
-import com.david.auth_layer_architecture.persistence.AccessTokenRepository;
-import com.david.auth_layer_architecture.persistence.RefreshTokenRepository;
-import com.david.auth_layer_architecture.presentation.security.filters.*;
+import com.david.auth_layer_architecture.infrestructure.repository.AccessTokenRepository;
+import com.david.auth_layer_architecture.infrestructure.repository.RefreshTokenRepository;
+import com.david.auth_layer_architecture.presentation.security.filters.auth.JwtAccessAppFilter;
+import com.david.auth_layer_architecture.presentation.security.filters.auth.OAuth2ErrorFilter;
+import com.david.auth_layer_architecture.presentation.security.filters.auth.OAuth2SuccessFilter;
+import com.david.auth_layer_architecture.presentation.security.filters.credential.JwtChangePasswordFilter;
+import com.david.auth_layer_architecture.presentation.security.filters.credential.JwtRefreshAccessToVerifyAccount;
+import com.david.auth_layer_architecture.presentation.security.filters.credential.JwtVerifyAccountFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

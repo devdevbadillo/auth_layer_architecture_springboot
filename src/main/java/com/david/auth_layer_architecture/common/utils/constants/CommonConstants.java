@@ -1,6 +1,5 @@
 package com.david.auth_layer_architecture.common.utils.constants;
 
-import org.springframework.beans.factory.annotation.Value;
 
 public class CommonConstants {
 

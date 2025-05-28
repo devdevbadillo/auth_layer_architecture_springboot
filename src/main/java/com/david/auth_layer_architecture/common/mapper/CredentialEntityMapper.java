@@ -1,6 +1,6 @@
 package com.david.auth_layer_architecture.common.mapper;
 
-import com.david.auth_layer_architecture.domain.dto.request.SignUpRequest;
+import com.david.auth_layer_architecture.presentation.dto.request.SignUpRequest;
 import com.david.auth_layer_architecture.domain.entity.Credential;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;

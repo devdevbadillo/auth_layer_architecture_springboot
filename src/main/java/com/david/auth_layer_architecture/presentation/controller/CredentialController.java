@@ -1,10 +1,10 @@
 package com.david.auth_layer_architecture.presentation.controller;
 
-import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
-import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
-import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
-import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
-import com.david.auth_layer_architecture.common.utils.constants.routes.CredentialRoutes;
+import com.david.auth_layer_architecture.domain.exceptions.auth.HasAccessWithOAuth2Exception;
+import com.david.auth_layer_architecture.domain.exceptions.credential.UserNotVerifiedException;
+import com.david.auth_layer_architecture.domain.exceptions.credential.UserNotFoundException;
+import com.david.auth_layer_architecture.infrestructure.utils.constants.CommonConstants;
+import com.david.auth_layer_architecture.infrestructure.utils.constants.routes.CredentialRoutes;
 import com.david.auth_layer_architecture.presentation.dto.request.ChangePasswordRequest;
 import com.david.auth_layer_architecture.presentation.dto.request.RecoveryAccountRequest;
 import com.david.auth_layer_architecture.presentation.dto.response.PairTokenResponse;
@@ -16,8 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import com.david.auth_layer_architecture.domain.application.ICredentialFacade;
-import com.david.auth_layer_architecture.common.exceptions.credential.UserAlreadyExistException;
+import com.david.auth_layer_architecture.application.facade.interfaces.ICredentialFacade;
+import com.david.auth_layer_architecture.domain.exceptions.credential.UserAlreadyExistException;
 import com.david.auth_layer_architecture.presentation.dto.request.SignUpRequest;
 import com.david.auth_layer_architecture.presentation.dto.response.MessageResponse;
 
@@ -53,7 +53,7 @@ public class CredentialController {
     @PostMapping(CredentialRoutes.RECOVERY_ACCOUNT_URL)
     public ResponseEntity<MessageResponse> recoveryAccount(
             @RequestBody @Valid RecoveryAccountRequest recoveryAccountRequest
-    ) throws UserNotFoundException, UserNotVerifiedException, HaveAccessWithOAuth2Exception {
+    ) throws UserNotFoundException, UserNotVerifiedException, HasAccessWithOAuth2Exception {
         return ResponseEntity.ok(credentialFacade.recoveryAccount(recoveryAccountRequest));
     }
 

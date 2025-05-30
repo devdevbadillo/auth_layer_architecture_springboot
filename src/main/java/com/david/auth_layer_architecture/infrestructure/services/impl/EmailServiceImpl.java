@@ -1,6 +1,6 @@
 package com.david.auth_layer_architecture.infrestructure.services.impl;
 
-import com.david.auth_layer_architecture.common.utils.constants.messages.EmailMessages;
+import com.david.auth_layer_architecture.presentation.messages.EmailMessages;
 import com.david.auth_layer_architecture.infrestructure.services.interfaces.IEmailService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailSendException;

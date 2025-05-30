@@ -1,11 +1,11 @@
 package com.david.auth_layer_architecture.business.services;
 
-import com.david.auth_layer_architecture.business.impl.application.CredentialServiceImpl;
-import com.david.auth_layer_architecture.business.interfaces.domain.IAccessTokenService;
+import com.david.auth_layer_architecture.business.services.impl.application.CredentialServiceImpl;
+import com.david.auth_layer_architecture.business.services.interfaces.domain.IAccessTokenService;
 import com.david.auth_layer_architecture.infrestructure.services.interfaces.IEmailService;
-import com.david.auth_layer_architecture.business.interfaces.domain.IRefreshTokenService;
-import com.david.auth_layer_architecture.common.exceptions.credential.UserAlreadyExistException;
-import com.david.auth_layer_architecture.common.utils.JwtUtil;
+import com.david.auth_layer_architecture.business.services.interfaces.domain.IRefreshTokenService;
+import com.david.auth_layer_architecture.domain.exceptions.credential.UserAlreadyExistException;
+import com.david.auth_layer_architecture.infrestructure.utils.JwtUtil;
 import com.david.auth_layer_architecture.domain.entity.Credential;
 import com.david.auth_layer_architecture.infrestructure.repository.CredentialRepository;
 import jakarta.mail.MessagingException;

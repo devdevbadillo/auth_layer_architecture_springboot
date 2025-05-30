@@ -1,8 +1,8 @@
 package com.david.auth_layer_architecture.presentation.controller;
 
-import com.david.auth_layer_architecture.domain.application.IUserFacade;
-import com.david.auth_layer_architecture.common.utils.constants.CommonConstants;
-import com.david.auth_layer_architecture.common.utils.constants.routes.UserRoutes;
+import com.david.auth_layer_architecture.application.facade.interfaces.IUserFacade;
+import com.david.auth_layer_architecture.infrestructure.utils.constants.CommonConstants;
+import com.david.auth_layer_architecture.infrestructure.utils.constants.routes.UserRoutes;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;

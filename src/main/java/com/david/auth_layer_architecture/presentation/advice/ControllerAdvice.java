@@ -3,11 +3,10 @@ package com.david.auth_layer_architecture.presentation.advice;
 import java.util.Map;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.david.auth_layer_architecture.common.exceptions.accessToken.AlreadyHaveAccessTokenToChangePasswordException;
-import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
-import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
-import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
-import com.david.auth_layer_architecture.common.utils.constants.messages.EmailMessages;
+import com.david.auth_layer_architecture.domain.exceptions.auth.HasAccessWithOAuth2Exception;
+import com.david.auth_layer_architecture.domain.exceptions.credential.UserNotVerifiedException;
+import com.david.auth_layer_architecture.domain.exceptions.credential.UserNotFoundException;
+import com.david.auth_layer_architecture.presentation.messages.EmailMessages;
 import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -20,7 +19,7 @@ import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.david.auth_layer_architecture.common.exceptions.credential.UserAlreadyExistException;
+import com.david.auth_layer_architecture.domain.exceptions.credential.UserAlreadyExistException;
 
 @RestControllerAdvice
 public class ControllerAdvice {
@@ -73,15 +72,11 @@ public class ControllerAdvice {
         return new ResponseEntity<>(Map.of(KEY_MESSAGE, ex.getMessage()), HttpStatus.UNAUTHORIZED);
     }
 
-    @ExceptionHandler(HaveAccessWithOAuth2Exception.class)
-    private ResponseEntity<Map<String, String>> handleHaveAccessWithOAuth2Exception(HaveAccessWithOAuth2Exception ex){
+    @ExceptionHandler(HasAccessWithOAuth2Exception.class)
+    private ResponseEntity<Map<String, String>> handleHaveAccessWithOAuth2Exception(HasAccessWithOAuth2Exception ex){
         return new ResponseEntity<>(Map.of(KEY_MESSAGE, ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler( AlreadyHaveAccessTokenToChangePasswordException.class )
-    private ResponseEntity<Map<String, String>> handleAlreadyHaveAccessTokenToChangePasswordException(AlreadyHaveAccessTokenToChangePasswordException ex){
-        return new ResponseEntity<>(Map.of(KEY_MESSAGE, ex.getMessage()), HttpStatus.BAD_REQUEST);
-    }
 
     @ExceptionHandler( UserNotVerifiedException.class)
     private ResponseEntity<Map<String, String>> handleUserNotVerifiedException(UserNotVerifiedException ex){

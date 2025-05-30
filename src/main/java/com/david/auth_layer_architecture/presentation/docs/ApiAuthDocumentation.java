@@ -1,8 +1,8 @@
 package com.david.auth_layer_architecture.presentation.docs;
 
-import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
-import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
-import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
+import com.david.auth_layer_architecture.domain.exceptions.auth.HasAccessWithOAuth2Exception;
+import com.david.auth_layer_architecture.domain.exceptions.credential.UserNotVerifiedException;
+import com.david.auth_layer_architecture.domain.exceptions.credential.UserNotFoundException;
 import com.david.auth_layer_architecture.presentation.dto.request.SignInRequest;
 import com.david.auth_layer_architecture.presentation.dto.response.MessageResponse;
 import com.david.auth_layer_architecture.presentation.dto.response.PairTokenResponse;
@@ -75,7 +75,7 @@ public interface ApiAuthDocumentation {
     })
     ResponseEntity<PairTokenResponse> signIn(
             @RequestBody @Valid SignInRequest signInRequest
-    ) throws UserNotFoundException, BadCredentialsException, HaveAccessWithOAuth2Exception, UserNotVerifiedException;
+    ) throws UserNotFoundException, BadCredentialsException, HasAccessWithOAuth2Exception, UserNotVerifiedException;
 
 
     @Operation(

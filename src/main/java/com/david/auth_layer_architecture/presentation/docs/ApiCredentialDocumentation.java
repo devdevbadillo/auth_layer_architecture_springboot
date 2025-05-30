@@ -1,9 +1,9 @@
 package com.david.auth_layer_architecture.presentation.docs;
 
-import com.david.auth_layer_architecture.common.exceptions.auth.HaveAccessWithOAuth2Exception;
-import com.david.auth_layer_architecture.common.exceptions.auth.UserNotVerifiedException;
-import com.david.auth_layer_architecture.common.exceptions.credential.UserAlreadyExistException;
-import com.david.auth_layer_architecture.common.exceptions.credential.UserNotFoundException;
+import com.david.auth_layer_architecture.domain.exceptions.auth.HasAccessWithOAuth2Exception;
+import com.david.auth_layer_architecture.domain.exceptions.credential.UserNotVerifiedException;
+import com.david.auth_layer_architecture.domain.exceptions.credential.UserAlreadyExistException;
+import com.david.auth_layer_architecture.domain.exceptions.credential.UserNotFoundException;
 import com.david.auth_layer_architecture.presentation.dto.request.ChangePasswordRequest;
 import com.david.auth_layer_architecture.presentation.dto.request.RecoveryAccountRequest;
 import com.david.auth_layer_architecture.presentation.dto.request.SignUpRequest;
@@ -198,7 +198,7 @@ public interface ApiCredentialDocumentation {
     })
     ResponseEntity<MessageResponse> recoveryAccount(
             @RequestBody @Valid RecoveryAccountRequest recoveryAccountRequest
-    ) throws UserNotFoundException, UserNotVerifiedException, HaveAccessWithOAuth2Exception;
+    ) throws UserNotFoundException, UserNotVerifiedException, HasAccessWithOAuth2Exception;
 
     @Operation(
             summary = "View change password",
